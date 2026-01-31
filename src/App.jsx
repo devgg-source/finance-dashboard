@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
 import Sidebar from './components/Sidebar';
@@ -7,6 +7,9 @@ import TransactionList from './components/TransactionList';
 import { MonthlyOverviewChart, ExpenseBreakdownChart } from './components/Charts';
 import { useFinance } from './context/FinanceContext';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
+import TransactionsPage from './pages/TransactionsPage';
+import AnalyticsPage from './pages/AnalyticsPage';
+import SettingsPage from './pages/SettingsPage';
 import './index.css';
 
 // Dashboard Page Component
@@ -70,9 +73,9 @@ const Dashboard = () => {
             <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
             <p className="text-slate-500 text-sm mt-0.5">Your latest financial activity</p>
           </div>
-          <a href="/transactions" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+          <Link to="/transactions" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
             View All →
-          </a>
+          </Link>
         </div>
         <TransactionList limit={5} />
       </div>
@@ -96,24 +99,9 @@ const AppLayout = () => {
           <div className="max-w-[1400px]">
             <Routes>
               <Route path="/" element={<Dashboard />} />
-              <Route path="/transactions" element={
-                <div className="text-white">
-                  <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
-                  <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
-                </div>
-              } />
-              <Route path="/analytics" element={
-                <div className="text-white">
-                  <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-                  <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
-                </div>
-              } />
-              <Route path="/settings" element={
-                <div className="text-white">
-                  <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-                  <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
-                </div>
-              } />
+              <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </div>
         </main>
