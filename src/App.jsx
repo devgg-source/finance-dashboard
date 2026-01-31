@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
+import { SidebarProvider, useSidebar } from './context/SidebarContext';
 import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
@@ -13,15 +14,15 @@ const Dashboard = () => {
   const { totals, balance } = useFinance();
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
+      <div className="mb-8">
         <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard</h1>
         <p className="text-slate-500 mt-1 text-sm">Welcome back! Here's your financial overview.</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
           title="Total Balance"
           amount={balance}
@@ -57,7 +58,7 @@ const Dashboard = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <MonthlyOverviewChart />
         <ExpenseBreakdownChart />
       </div>
@@ -79,43 +80,57 @@ const Dashboard = () => {
   );
 };
 
+// Layout Component with dynamic sidebar width
+const AppLayout = () => {
+  const { isCollapsed } = useSidebar();
+
+  return (
+    <div className="min-h-screen bg-[#0a0a0f]">
+      <Sidebar />
+      <div 
+        className={`transition-all duration-300 ease-in-out ${
+          isCollapsed ? 'pl-20' : 'pl-64'
+        }`}
+      >
+        <main className="min-h-screen p-6 lg:p-8">
+          <div className="max-w-[1600px] mx-auto">
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/transactions" element={
+                <div className="text-white">
+                  <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
+                  <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
+                </div>
+              } />
+              <Route path="/analytics" element={
+                <div className="text-white">
+                  <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+                  <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
+                </div>
+              } />
+              <Route path="/settings" element={
+                <div className="text-white">
+                  <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+                  <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
+                </div>
+              } />
+            </Routes>
+          </div>
+        </main>
+      </div>
+    </div>
+  );
+};
+
 // Main App Component
 function App() {
   return (
     <FinanceProvider>
-      <Router>
-        <div className="min-h-screen bg-[#0a0a0f]">
-          {/* Fixed Sidebar */}
-          <Sidebar />
-          
-          {/* Main Content - offset by sidebar width */}
-          <div className="pl-64">
-            <main className="min-h-screen p-8">
-              <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/transactions" element={
-                  <div className="text-white">
-                    <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
-                  </div>
-                } />
-                <Route path="/analytics" element={
-                  <div className="text-white">
-                    <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
-                  </div>
-                } />
-                <Route path="/settings" element={
-                  <div className="text-white">
-                    <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
-                    <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
-                  </div>
-                } />
-              </Routes>
-            </main>
-          </div>
-        </div>
-      </Router>
+      <SidebarProvider>
+        <Router>
+          <AppLayout />
+        </Router>
+      </SidebarProvider>
     </FinanceProvider>
   );
 }
