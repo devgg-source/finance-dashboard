@@ -13,15 +13,15 @@ const Dashboard = () => {
   const { totals, balance } = useFinance();
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-white">Dashboard</h1>
-        <p className="text-slate-400 mt-1">Welcome back! Here's your financial overview.</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard</h1>
+        <p className="text-slate-500 mt-1 text-sm">Welcome back! Here's your financial overview.</p>
       </div>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-5">
         <StatCard
           title="Total Balance"
           amount={balance}
@@ -57,16 +57,21 @@ const Dashboard = () => {
       </div>
 
       {/* Charts */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         <MonthlyOverviewChart />
         <ExpenseBreakdownChart />
       </div>
 
       {/* Recent Transactions */}
-      <div className="bg-slate-800/50 rounded-xl p-6 border border-slate-700/50">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
-          <a href="/transactions" className="text-sky-400 hover:text-sky-300 text-sm">View All</a>
+      <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
+            <p className="text-slate-500 text-sm mt-0.5">Your latest financial activity</p>
+          </div>
+          <a href="/transactions" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
+            View All →
+          </a>
         </div>
         <TransactionList limit={5} />
       </div>
@@ -79,16 +84,36 @@ function App() {
   return (
     <FinanceProvider>
       <Router>
-        <div className="min-h-screen bg-slate-900">
+        <div className="min-h-screen bg-[#0a0a0f]">
+          {/* Fixed Sidebar */}
           <Sidebar />
-          <main className="ml-64 p-8">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/transactions" element={<div className="text-white">Transactions Page (Coming Soon)</div>} />
-              <Route path="/analytics" element={<div className="text-white">Analytics Page (Coming Soon)</div>} />
-              <Route path="/settings" element={<div className="text-white">Settings Page (Coming Soon)</div>} />
-            </Routes>
-          </main>
+          
+          {/* Main Content - offset by sidebar width */}
+          <div className="pl-64">
+            <main className="min-h-screen p-8">
+              <Routes>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/transactions" element={
+                  <div className="text-white">
+                    <h1 className="text-2xl font-bold tracking-tight">Transactions</h1>
+                    <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
+                  </div>
+                } />
+                <Route path="/analytics" element={
+                  <div className="text-white">
+                    <h1 className="text-2xl font-bold tracking-tight">Analytics</h1>
+                    <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
+                  </div>
+                } />
+                <Route path="/settings" element={
+                  <div className="text-white">
+                    <h1 className="text-2xl font-bold tracking-tight">Settings</h1>
+                    <p className="text-slate-500 mt-1 text-sm">Coming Soon</p>
+                  </div>
+                } />
+              </Routes>
+            </main>
+          </div>
         </div>
       </Router>
     </FinanceProvider>
