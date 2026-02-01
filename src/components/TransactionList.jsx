@@ -1,10 +1,27 @@
-import { Trash2, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
+import { useState } from 'react';
+import { Trash2, ArrowUpRight, ArrowDownRight, Wallet, Loader2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { useToast } from '../context/ToastContext';
 
 const TransactionList = ({ limit }) => {
   const { transactions, deleteTransaction, getCategoryById } = useFinance();
+  const toast = useToast();
+  const [deletingId, setDeletingId] = useState(null);
   
   const displayTransactions = limit ? transactions.slice(0, limit) : transactions;
+
+  const handleDelete = async (id, description) => {
+    if (deletingId) return;
+    setDeletingId(id);
+    try {
+      await deleteTransaction(id);
+      toast.success('Transaction deleted', `${description} has been removed`);
+    } catch (error) {
+      toast.error('Failed to delete', 'Something went wrong. Please try again.');
+    } finally {
+      setDeletingId(null);
+    }
+  };
 
   const formatAmount = (value) => {
     return new Intl.NumberFormat('en-IN', {
@@ -87,10 +104,15 @@ const TransactionList = ({ limit }) => {
               
               {/* Delete button */}
               <button
-                onClick={() => deleteTransaction(transaction.id)}
-                className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                onClick={() => handleDelete(transaction.id, transaction.description)}
+                disabled={deletingId === transaction.id}
+                className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200 disabled:opacity-50"
               >
-                <Trash2 className="w-4 h-4" />
+                {deletingId === transaction.id ? (
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                ) : (
+                  <Trash2 className="w-4 h-4" />
+                )}
               </button>
             </div>
           </div>
