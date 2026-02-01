@@ -8,7 +8,8 @@ import {
   Wallet,
   PiggyBank,
   Calendar,
-  Target
+  Target,
+  Loader2
 } from 'lucide-react';
 import { 
   AreaChart, 
@@ -28,7 +29,7 @@ import {
 import { monthlyData } from '../data/mockData';
 
 const AnalyticsPage = () => {
-  const { transactions, totals, balance, expensesByCategory, categories } = useFinance();
+  const { transactions, totals, balance, expensesByCategory, categories, isLoading } = useFinance();
 
   // Calculate monthly trends
   const monthlyTrends = useMemo(() => {
@@ -98,6 +99,18 @@ const AnalyticsPage = () => {
       maximumFractionDigits: 0,
     }).format(value);
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
+          <p className="text-slate-400 text-sm">Loading analytics...</p>
+        </div>
+      </div>
+    );
+  }
 
   const formatCompact = (value) => {
     if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
