@@ -9,7 +9,6 @@ import { useFinance } from './context/FinanceContext';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2 } from 'lucide-react';
 import TransactionsPage from './pages/TransactionsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
-import SettingsPage from './pages/SettingsPage';
 import './index.css';
 
 // Loading Spinner Component
@@ -115,7 +114,6 @@ const AppLayout = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </div>
         </main>

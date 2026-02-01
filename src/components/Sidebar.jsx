@@ -1,12 +1,11 @@
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, PieChart, Settings, Wallet, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useSidebar } from '../context/SidebarContext';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/transactions', icon: Receipt, label: 'Transactions' },
   { path: '/analytics', icon: PieChart, label: 'Analytics' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 const Sidebar = () => {
