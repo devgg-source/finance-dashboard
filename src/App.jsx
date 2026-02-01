@@ -6,15 +6,29 @@ import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
 import { MonthlyOverviewChart, ExpenseBreakdownChart } from './components/Charts';
 import { useFinance } from './context/FinanceContext';
-import { Wallet, TrendingUp, TrendingDown, PiggyBank } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2 } from 'lucide-react';
 import TransactionsPage from './pages/TransactionsPage';
 import AnalyticsPage from './pages/AnalyticsPage';
 import SettingsPage from './pages/SettingsPage';
 import './index.css';
 
+// Loading Spinner Component
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center min-h-[400px]">
+    <div className="text-center">
+      <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
+      <p className="text-slate-400 text-sm">Loading your data...</p>
+    </div>
+  </div>
+);
+
 // Dashboard Page Component
 const Dashboard = () => {
-  const { totals, balance } = useFinance();
+  const { totals, balance, isLoading } = useFinance();
+
+  if (isLoading) {
+    return <LoadingSpinner />;
+  }
 
   return (
     <div className="space-y-6">
