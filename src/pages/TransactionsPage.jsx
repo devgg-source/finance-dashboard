@@ -1,10 +1,12 @@
 import { useState, useMemo } from 'react';
 import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { useToast } from '../context/ToastContext';
 import { v4 as uuidv4 } from 'uuid';
 
 const TransactionsPage = () => {
   const { transactions, categories, addTransaction, deleteTransaction, getCategoryById, isLoading } = useFinance();
+  const toast = useToast();
   
   // State for filters
   const [searchQuery, setSearchQuery] = useState('');
@@ -74,6 +76,8 @@ const TransactionsPage = () => {
         amount: parseFloat(newTransaction.amount)
       });
 
+      toast.success('Transaction added', `${newTransaction.description} has been saved`);
+
       // Reset form
       setNewTransaction({
         type: 'expense',
@@ -85,6 +89,7 @@ const TransactionsPage = () => {
       setShowAddModal(false);
     } catch (error) {
       console.error('Failed to add transaction:', error);
+      toast.error('Failed to add', 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -96,8 +101,10 @@ const TransactionsPage = () => {
     setDeletingId(id);
     try {
       await deleteTransaction(id);
+      toast.success('Transaction deleted', 'The transaction has been removed');
     } catch (error) {
       console.error('Failed to delete transaction:', error);
+      toast.error('Failed to delete', 'Something went wrong. Please try again.');
     } finally {
       setDeletingId(null);
     }
