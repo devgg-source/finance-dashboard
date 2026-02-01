@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
+import { ToastProvider } from './context/ToastContext';
 import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
@@ -125,13 +126,15 @@ const AppLayout = () => {
 // Main App Component
 function App() {
   return (
-    <FinanceProvider>
-      <SidebarProvider>
-        <Router>
-          <AppLayout />
-        </Router>
-      </SidebarProvider>
-    </FinanceProvider>
+    <ToastProvider>
+      <FinanceProvider>
+        <SidebarProvider>
+          <Router>
+            <AppLayout />
+          </Router>
+        </SidebarProvider>
+      </FinanceProvider>
+    </ToastProvider>
   );
 }
 
