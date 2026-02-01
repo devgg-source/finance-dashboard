@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
-import { initialTransactions, categories } from '../data/mockData';
+import { categories } from '../data/mockData';
 import dbService from '../services/indexedDB';
 
 const FinanceContext = createContext();
@@ -26,26 +26,16 @@ export const FinanceProvider = ({ children }) => {
         // Initialize IndexedDB
         await dbService.init();
         
-        // Check if we have existing data
-        const hasExistingData = await dbService.hasData();
-        
-        if (hasExistingData) {
-          // Load existing transactions from IndexedDB
-          const storedTransactions = await dbService.getAllTransactions();
-          setTransactions(storedTransactions);
-          console.log(`📦 Loaded ${storedTransactions.length} transactions from IndexedDB`);
-        } else {
-          // First time: seed with mock data
-          await dbService.addTransactions(initialTransactions);
-          setTransactions(initialTransactions);
-          console.log('🌱 Seeded database with initial transactions');
-        }
+        // Load existing transactions from IndexedDB
+        const storedTransactions = await dbService.getAllTransactions();
+        setTransactions(storedTransactions);
+        console.log(`📦 Loaded ${storedTransactions.length} transactions from IndexedDB`);
         
         setIsInitialized(true);
       } catch (error) {
         console.error('Failed to initialize database:', error);
-        // Fallback to mock data if IndexedDB fails
-        setTransactions(initialTransactions);
+        // Start with empty state if IndexedDB fails
+        setTransactions([]);
       } finally {
         setIsLoading(false);
       }
@@ -104,15 +94,14 @@ export const FinanceProvider = ({ children }) => {
     }
   }, []);
 
-  // Clear all data and reset
-  const resetData = useCallback(async () => {
+  // Clear all data
+  const clearAllData = useCallback(async () => {
     try {
       await dbService.clearAllTransactions();
-      await dbService.addTransactions(initialTransactions);
-      setTransactions(initialTransactions);
-      console.log('🔄 Data reset to initial state');
+      setTransactions([]);
+      console.log('🗑️ All data cleared');
     } catch (error) {
-      console.error('Failed to reset data:', error);
+      console.error('Failed to clear data:', error);
       throw error;
     }
   }, []);
@@ -162,7 +151,7 @@ export const FinanceProvider = ({ children }) => {
     addTransaction,
     deleteTransaction,
     updateTransaction,
-    resetData,
+    clearAllData,
     getCategoryById
   };
 
