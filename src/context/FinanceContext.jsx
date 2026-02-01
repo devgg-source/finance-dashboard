@@ -1,5 +1,6 @@
-import { createContext, useContext, useState, useMemo } from 'react';
+import { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 import { initialTransactions, categories } from '../data/mockData';
+import dbService from '../services/indexedDB';
 
 const FinanceContext = createContext();
 
@@ -12,17 +13,109 @@ export const useFinance = () => {
 };
 
 export const FinanceProvider = ({ children }) => {
-  const [transactions, setTransactions] = useState(initialTransactions);
+  const [transactions, setTransactions] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInitialized, setIsInitialized] = useState(false);
+
+  // Initialize database and load data
+  useEffect(() => {
+    const initializeData = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Initialize IndexedDB
+        await dbService.init();
+        
+        // Check if we have existing data
+        const hasExistingData = await dbService.hasData();
+        
+        if (hasExistingData) {
+          // Load existing transactions from IndexedDB
+          const storedTransactions = await dbService.getAllTransactions();
+          setTransactions(storedTransactions);
+          console.log(`📦 Loaded ${storedTransactions.length} transactions from IndexedDB`);
+        } else {
+          // First time: seed with mock data
+          await dbService.addTransactions(initialTransactions);
+          setTransactions(initialTransactions);
+          console.log('🌱 Seeded database with initial transactions');
+        }
+        
+        setIsInitialized(true);
+      } catch (error) {
+        console.error('Failed to initialize database:', error);
+        // Fallback to mock data if IndexedDB fails
+        setTransactions(initialTransactions);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeData();
+  }, []);
 
   // Add new transaction
-  const addTransaction = (transaction) => {
-    setTransactions(prev => [transaction, ...prev]);
-  };
+  const addTransaction = useCallback(async (transaction) => {
+    try {
+      // Add to IndexedDB first
+      await dbService.addTransaction(transaction);
+      
+      // Then update state
+      setTransactions(prev => [transaction, ...prev]);
+      
+      console.log('✅ Transaction added successfully');
+    } catch (error) {
+      console.error('Failed to add transaction:', error);
+      throw error;
+    }
+  }, []);
 
   // Delete transaction
-  const deleteTransaction = (id) => {
-    setTransactions(prev => prev.filter(t => t.id !== id));
-  };
+  const deleteTransaction = useCallback(async (id) => {
+    try {
+      // Delete from IndexedDB first
+      await dbService.deleteTransaction(id);
+      
+      // Then update state
+      setTransactions(prev => prev.filter(t => t.id !== id));
+      
+      console.log('✅ Transaction deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
+      throw error;
+    }
+  }, []);
+
+  // Update transaction
+  const updateTransaction = useCallback(async (transaction) => {
+    try {
+      // Update in IndexedDB first
+      await dbService.updateTransaction(transaction);
+      
+      // Then update state
+      setTransactions(prev => 
+        prev.map(t => t.id === transaction.id ? transaction : t)
+      );
+      
+      console.log('✅ Transaction updated successfully');
+    } catch (error) {
+      console.error('Failed to update transaction:', error);
+      throw error;
+    }
+  }, []);
+
+  // Clear all data and reset
+  const resetData = useCallback(async () => {
+    try {
+      await dbService.clearAllTransactions();
+      await dbService.addTransactions(initialTransactions);
+      setTransactions(initialTransactions);
+      console.log('🔄 Data reset to initial state');
+    } catch (error) {
+      console.error('Failed to reset data:', error);
+      throw error;
+    }
+  }, []);
 
   // Calculate totals
   const totals = useMemo(() => {
@@ -38,7 +131,7 @@ export const FinanceProvider = ({ children }) => {
   const balance = totals.income - totals.expense - totals.savings;
 
   // Get category details
-  const getCategoryById = (id) => categories.find(c => c.id === id);
+  const getCategoryById = useCallback((id) => categories.find(c => c.id === id), []);
 
   // Get expenses by category
   const expensesByCategory = useMemo(() => {
@@ -56,7 +149,7 @@ export const FinanceProvider = ({ children }) => {
       return acc;
     }, {});
     return Object.values(grouped);
-  }, [transactions]);
+  }, [transactions, getCategoryById]);
 
   const value = {
     transactions,
@@ -64,8 +157,12 @@ export const FinanceProvider = ({ children }) => {
     totals,
     balance,
     expensesByCategory,
+    isLoading,
+    isInitialized,
     addTransaction,
     deleteTransaction,
+    updateTransaction,
+    resetData,
     getCategoryById
   };
 
