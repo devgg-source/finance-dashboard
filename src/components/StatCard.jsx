@@ -48,19 +48,25 @@ const StatCard = ({ title, amount, icon: Icon, trend, trendValue, color = 'prima
           <p className="text-slate-400 text-sm font-medium">{title}</p>
           <h3 className="text-2xl font-bold text-white tracking-tight">{formatAmount(amount)}</h3>
           
-          {trendValue && (
-            <div className="flex items-center gap-2">
-              <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
-                trend === 'up' 
-                  ? 'bg-emerald-500/10 text-emerald-400' 
-                  : 'bg-rose-500/10 text-rose-400'
-              }`}>
-                {trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
-                {trendValue}%
+          <div className="flex items-center gap-2">
+            {trendValue === 0 ? (
+              <div className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-400">
+                No change
               </div>
-              <span className="text-slate-500 text-xs">vs last month</span>
-            </div>
-          )}
+            ) : (
+              <>
+                <div className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${
+                  trend === 'up' 
+                    ? 'bg-emerald-500/10 text-emerald-400' 
+                    : 'bg-rose-500/10 text-rose-400'
+                }`}>
+                  {trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
+                  {trendValue}%
+                </div>
+                <span className="text-slate-500 text-xs">vs last month</span>
+              </>
+            )}
+          </div>
         </div>
         
         {/* Icon with gradient background */}

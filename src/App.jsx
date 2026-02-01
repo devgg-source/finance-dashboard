@@ -24,7 +24,7 @@ const LoadingSpinner = () => (
 
 // Dashboard Page Component
 const Dashboard = () => {
-  const { totals, balance, isLoading } = useFinance();
+  const { totals, balance, monthlyTrends, isLoading } = useFinance();
 
   if (isLoading) {
     return <LoadingSpinner />;
@@ -44,32 +44,32 @@ const Dashboard = () => {
           title="Total Balance"
           amount={balance}
           icon={Wallet}
-          trend="up"
-          trendValue={12}
+          trend={monthlyTrends.balance.direction}
+          trendValue={monthlyTrends.balance.value}
           color="primary"
         />
         <StatCard
           title="Total Income"
           amount={totals.income}
           icon={TrendingUp}
-          trend="up"
-          trendValue={8}
+          trend={monthlyTrends.income.direction}
+          trendValue={monthlyTrends.income.value}
           color="green"
         />
         <StatCard
           title="Total Expenses"
           amount={totals.expense}
           icon={TrendingDown}
-          trend="down"
-          trendValue={5}
+          trend={monthlyTrends.expense.direction}
+          trendValue={monthlyTrends.expense.value}
           color="red"
         />
         <StatCard
           title="Total Savings"
           amount={totals.savings}
           icon={PiggyBank}
-          trend="up"
-          trendValue={15}
+          trend={monthlyTrends.savings.direction}
+          trendValue={monthlyTrends.savings.value}
           color="orange"
         />
       </div>
