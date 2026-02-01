@@ -109,14 +109,12 @@ const AppLayout = () => {
           isCollapsed ? 'pl-20' : 'pl-64'
         }`}
       >
-        <main className="min-h-screen p-6">
-          <div className="max-w-[1400px]">
-            <Routes>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/transactions" element={<TransactionsPage />} />
-              <Route path="/analytics" element={<AnalyticsPage />} />
-            </Routes>
-          </div>
+        <main className="min-h-screen p-6 lg:p-8">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/transactions" element={<TransactionsPage />} />
+            <Route path="/analytics" element={<AnalyticsPage />} />
+          </Routes>
         </main>
       </div>
     </div>
