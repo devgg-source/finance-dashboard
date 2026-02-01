@@ -1,16 +1,18 @@
 import { useState, useMemo } from 'react';
-import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2 } from 'lucide-react';
+import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { v4 as uuidv4 } from 'uuid';
 
 const TransactionsPage = () => {
-  const { transactions, categories, addTransaction, deleteTransaction, getCategoryById } = useFinance();
+  const { transactions, categories, addTransaction, deleteTransaction, getCategoryById, isLoading } = useFinance();
   
   // State for filters
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
   
   // State for new transaction form
   const [newTransaction, setNewTransaction] = useState({
@@ -59,26 +61,46 @@ const TransactionsPage = () => {
     }
   };
 
-  // Handle form submission
-  const handleAddTransaction = (e) => {
+  // Handle form submission (async)
+  const handleAddTransaction = async (e) => {
     e.preventDefault();
-    if (!newTransaction.description || !newTransaction.amount) return;
+    if (!newTransaction.description || !newTransaction.amount || isSubmitting) return;
 
-    addTransaction({
-      id: uuidv4(),
-      ...newTransaction,
-      amount: parseFloat(newTransaction.amount)
-    });
+    setIsSubmitting(true);
+    try {
+      await addTransaction({
+        id: uuidv4(),
+        ...newTransaction,
+        amount: parseFloat(newTransaction.amount)
+      });
 
-    // Reset form
-    setNewTransaction({
-      type: 'expense',
-      category: 'food',
-      description: '',
-      amount: '',
-      date: new Date().toISOString().split('T')[0]
-    });
-    setShowAddModal(false);
+      // Reset form
+      setNewTransaction({
+        type: 'expense',
+        category: 'food',
+        description: '',
+        amount: '',
+        date: new Date().toISOString().split('T')[0]
+      });
+      setShowAddModal(false);
+    } catch (error) {
+      console.error('Failed to add transaction:', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle delete (async)
+  const handleDelete = async (id) => {
+    if (deletingId) return;
+    setDeletingId(id);
+    try {
+      await deleteTransaction(id);
+    } catch (error) {
+      console.error('Failed to delete transaction:', error);
+    } finally {
+      setDeletingId(null);
+    }
   };
 
   // Get relevant categories based on transaction type
@@ -87,6 +109,18 @@ const TransactionsPage = () => {
     if (type === 'savings') return categories.filter(c => c.id === 'savings');
     return categories.filter(c => !['income', 'savings'].includes(c.id));
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
+          <p className="text-slate-400 text-sm">Loading transactions...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -238,10 +272,15 @@ const TransactionsPage = () => {
                 {/* Actions */}
                 <div className="col-span-1 flex items-center justify-end">
                   <button
-                    onClick={() => deleteTransaction(transaction.id)}
-                    className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                    onClick={() => handleDelete(transaction.id)}
+                    disabled={deletingId === transaction.id}
+                    className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
                   >
-                    <Trash2 className="w-4 h-4" />
+                    {deletingId === transaction.id ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Trash2 className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -378,9 +417,17 @@ const TransactionsPage = () => {
               {/* Submit Button */}
               <button
                 type="submit"
-                className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-xl transition-colors mt-6"
+                disabled={isSubmitting}
+                className="w-full py-3 bg-indigo-500 hover:bg-indigo-600 text-white font-medium rounded-xl transition-colors mt-6 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                Add Transaction
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Adding...
+                  </>
+                ) : (
+                  'Add Transaction'
+                )}
               </button>
             </form>
           </div>
