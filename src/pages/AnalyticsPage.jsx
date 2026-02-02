@@ -26,10 +26,9 @@ import {
   Cell,
   Legend
 } from 'recharts';
-import { monthlyData } from '../data/mockData';
 
 const AnalyticsPage = () => {
-  const { transactions, totals, balance, expensesByCategory, categories, isLoading } = useFinance();
+  const { transactions, totals, balance, expensesByCategory, monthlyData, categories, isLoading } = useFinance();
 
   // Calculate monthly trends
   const monthlyTrends = useMemo(() => {
@@ -215,6 +214,11 @@ const AnalyticsPage = () => {
             <p className="text-slate-500 text-sm mt-0.5">6-month trend overview</p>
           </div>
           <div className="h-64">
+            {!monthlyData.some(m => m.income > 0 || m.expense > 0) ? (
+              <div className="h-full flex items-center justify-center">
+                <p className="text-slate-500 text-sm">No transaction data yet. Add some transactions to see the trend.</p>
+              </div>
+            ) : (
             <ResponsiveContainer width="100%" height="100%">
               <AreaChart data={monthlyData}>
                 <defs>
@@ -249,6 +253,7 @@ const AnalyticsPage = () => {
                 />
               </AreaChart>
             </ResponsiveContainer>
+            )}
           </div>
         </div>
 
