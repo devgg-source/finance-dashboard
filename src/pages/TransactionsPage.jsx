@@ -88,7 +88,6 @@ const TransactionsPage = () => {
       });
       setShowAddModal(false);
     } catch (error) {
-      console.error('Failed to add transaction:', error);
       toast.error('Failed to add', 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
@@ -103,7 +102,6 @@ const TransactionsPage = () => {
       await deleteTransaction(id);
       toast.success('Transaction deleted', 'The transaction has been removed');
     } catch (error) {
-      console.error('Failed to delete transaction:', error);
       toast.error('Failed to delete', 'Something went wrong. Please try again.');
     } finally {
       setDeletingId(null);

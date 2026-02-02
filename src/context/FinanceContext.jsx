@@ -29,11 +29,9 @@ export const FinanceProvider = ({ children }) => {
         // Load existing transactions from IndexedDB
         const storedTransactions = await dbService.getAllTransactions();
         setTransactions(storedTransactions);
-        console.log(`📦 Loaded ${storedTransactions.length} transactions from IndexedDB`);
         
         setIsInitialized(true);
       } catch (error) {
-        console.error('Failed to initialize database:', error);
         // Start with empty state if IndexedDB fails
         setTransactions([]);
       } finally {
@@ -52,10 +50,7 @@ export const FinanceProvider = ({ children }) => {
       
       // Then update state
       setTransactions(prev => [transaction, ...prev]);
-      
-      console.log('✅ Transaction added successfully');
     } catch (error) {
-      console.error('Failed to add transaction:', error);
       throw error;
     }
   }, []);
@@ -68,10 +63,7 @@ export const FinanceProvider = ({ children }) => {
       
       // Then update state
       setTransactions(prev => prev.filter(t => t.id !== id));
-      
-      console.log('✅ Transaction deleted successfully');
     } catch (error) {
-      console.error('Failed to delete transaction:', error);
       throw error;
     }
   }, []);
@@ -86,10 +78,7 @@ export const FinanceProvider = ({ children }) => {
       setTransactions(prev => 
         prev.map(t => t.id === transaction.id ? transaction : t)
       );
-      
-      console.log('✅ Transaction updated successfully');
     } catch (error) {
-      console.error('Failed to update transaction:', error);
       throw error;
     }
   }, []);
@@ -99,9 +88,7 @@ export const FinanceProvider = ({ children }) => {
     try {
       await dbService.clearAllTransactions();
       setTransactions([]);
-      console.log('🗑️ All data cleared');
     } catch (error) {
-      console.error('Failed to clear data:', error);
       throw error;
     }
   }, []);
