@@ -189,12 +189,50 @@ export const FinanceProvider = ({ children }) => {
     return Object.values(grouped);
   }, [transactions, getCategoryById]);
 
+  // Calculate monthly data for charts (last 6 months)
+  const monthlyData = useMemo(() => {
+    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const now = new Date();
+    const result = [];
+
+    // Generate last 6 months
+    for (let i = 5; i >= 0; i--) {
+      const date = new Date(now.getFullYear(), now.getMonth() - i, 1);
+      const month = date.getMonth();
+      const year = date.getFullYear();
+
+      // Filter transactions for this month
+      const monthTxns = transactions.filter(t => {
+        const txnDate = new Date(t.date);
+        return txnDate.getMonth() === month && txnDate.getFullYear() === year;
+      });
+
+      // Calculate totals
+      const totals = monthTxns.reduce((acc, t) => {
+        if (t.type === 'income') acc.income += t.amount;
+        else if (t.type === 'expense') acc.expense += t.amount;
+        else if (t.type === 'savings') acc.savings += t.amount;
+        return acc;
+      }, { income: 0, expense: 0, savings: 0 });
+
+      result.push({
+        month: months[month],
+        income: totals.income,
+        expense: totals.expense,
+        savings: totals.savings
+      });
+    }
+
+    return result;
+  }, [transactions]);
+
   const value = {
     transactions,
     categories,
     totals,
     balance,
     expensesByCategory,
+    monthlyData,
     monthlyTrends,
     isLoading,
     isInitialized,

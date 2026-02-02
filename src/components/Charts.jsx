@@ -1,5 +1,4 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { monthlyData } from '../data/mockData';
 import { useFinance } from '../context/FinanceContext';
 import { TrendingUp, PieChart as PieChartIcon } from 'lucide-react';
 
@@ -40,6 +39,11 @@ const CustomLegend = ({ payload }) => {
 
 // Area Chart for monthly overview
 export const MonthlyOverviewChart = () => {
+  const { monthlyData } = useFinance();
+
+  // Check if there's any data
+  const hasData = monthlyData.some(m => m.income > 0 || m.expense > 0 || m.savings > 0);
+
   return (
     <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06] hover:border-white/[0.1] transition-colors">
       {/* Header */}
@@ -54,7 +58,12 @@ export const MonthlyOverviewChart = () => {
       </div>
       
       <div className="h-72">
-        <ResponsiveContainer width="100%" height="100%">
+        {!hasData ? (
+          <div className="h-full flex items-center justify-center">
+            <p className="text-slate-500 text-sm">No transaction data yet. Add some transactions to see the chart.</p>
+          </div>
+        ) : (
+          <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={monthlyData}>
             <defs>
               <linearGradient id="incomeGradient" x1="0" y1="0" x2="0" y2="1">
@@ -92,6 +101,7 @@ export const MonthlyOverviewChart = () => {
             <Area type="monotone" dataKey="savings" stroke="#6366f1" fill="url(#savingsGradient)" strokeWidth={2.5} dot={false} />
           </AreaChart>
         </ResponsiveContainer>
+        )}
       </div>
     </div>
   );
@@ -117,54 +127,60 @@ export const ExpenseBreakdownChart = () => {
         </div>
       </div>
       
-      <div className="flex items-center gap-6">
-        {/* Pie Chart */}
-        <div className="h-56 flex-1">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <Pie
-                data={expensesByCategory}
-                cx="50%"
-                cy="50%"
-                innerRadius={55}
-                outerRadius={85}
-                paddingAngle={3}
-                dataKey="value"
-                strokeWidth={0}
-              >
-                {expensesByCategory.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={entry.color} />
-                ))}
-              </Pie>
-              <Tooltip 
-                formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
-                contentStyle={{ 
-                  backgroundColor: '#1a1a24', 
-                  border: '1px solid rgba(255,255,255,0.08)', 
-                  borderRadius: '12px',
-                  boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
-                }}
-                itemStyle={{ color: '#e2e8f0' }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+      {expensesByCategory.length === 0 ? (
+        <div className="h-56 flex items-center justify-center">
+          <p className="text-slate-500 text-sm">No expense data yet. Add some expenses to see the breakdown.</p>
         </div>
-        
-        {/* Legend */}
-        <div className="space-y-3">
-          {expensesByCategory.map((category, index) => (
-            <div key={index} className="flex items-center gap-3">
-              <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: category.color }} />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm text-white truncate">{category.name}</p>
-                <p className="text-xs text-slate-500">
-                  {((category.value / total) * 100).toFixed(0)}% • ₹{category.value.toLocaleString('en-IN')}
-                </p>
+      ) : (
+        <div className="flex items-center gap-6">
+          {/* Pie Chart */}
+          <div className="h-56 flex-1">
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <Pie
+                  data={expensesByCategory}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={3}
+                  dataKey="value"
+                  strokeWidth={0}
+                >
+                  {expensesByCategory.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip 
+                  formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                  contentStyle={{ 
+                    backgroundColor: '#1a1a24', 
+                    border: '1px solid rgba(255,255,255,0.08)', 
+                    borderRadius: '12px',
+                    boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
+                  }}
+                  itemStyle={{ color: '#e2e8f0' }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+          
+          {/* Legend */}
+          <div className="space-y-3">
+            {expensesByCategory.map((category, index) => (
+              <div key={index} className="flex items-center gap-3">
+                <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: category.color }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-white truncate">{category.name}</p>
+                  <p className="text-xs text-slate-500">
+                    {((category.value / total) * 100).toFixed(0)}% • ₹{category.value.toLocaleString('en-IN')}
+                  </p>
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
-      </div>
+      )}
     </div>
   );
 };
