@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
@@ -15,6 +15,16 @@ const TransactionsPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+
+  // Lock body scroll when modal is open
+  useEffect(() => {
+    if (showAddModal) {
+      document.body.classList.add('overflow-hidden');
+    } else {
+      document.body.classList.remove('overflow-hidden');
+    }
+    return () => document.body.classList.remove('overflow-hidden');
+  }, [showAddModal]);
   
   // State for new transaction form
   const [newTransaction, setNewTransaction] = useState({
