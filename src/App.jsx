@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
@@ -5,19 +6,38 @@ import { ToastProvider } from './context/ToastContext';
 import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
-import { MonthlyOverviewChart, ExpenseBreakdownChart } from './components/Charts';
 import { useFinance } from './context/FinanceContext';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2 } from 'lucide-react';
-import TransactionsPage from './pages/TransactionsPage';
-import AnalyticsPage from './pages/AnalyticsPage';
 import './index.css';
+
+// Lazy load pages and heavy components
+const TransactionsPage = lazy(() => import('./pages/TransactionsPage'));
+const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const Charts = lazy(() => import('./components/Charts').then(module => ({
+  default: () => (
+    <>
+      <module.MonthlyOverviewChart />
+      <module.ExpenseBreakdownChart />
+    </>
+  )
+})));
 
 // Loading Spinner Component
 const LoadingSpinner = () => (
   <div className="flex items-center justify-center min-h-[400px]">
     <div className="text-center">
       <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
-      <p className="text-slate-400 text-sm">Loading your data...</p>
+      <p className="text-slate-400 text-sm">Loading...</p>
+    </div>
+  </div>
+);
+
+// Page Loading Fallback
+const PageLoader = () => (
+  <div className="flex items-center justify-center min-h-[60vh]">
+    <div className="text-center">
+      <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
+      <p className="text-slate-400 text-sm">Loading page...</p>
     </div>
   </div>
 );
@@ -74,10 +94,15 @@ const Dashboard = () => {
         />
       </div>
 
-      {/* Charts */}
+      {/* Charts - Lazy loaded */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <MonthlyOverviewChart />
-        <ExpenseBreakdownChart />
+        <Suspense fallback={
+          <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06] h-[340px] flex items-center justify-center">
+            <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+          </div>
+        }>
+          <Charts />
+        </Suspense>
       </div>
 
       {/* Recent Transactions */}
@@ -110,11 +135,13 @@ const AppLayout = () => {
         }`}
       >
         <main className="min-h-screen p-6 lg:p-8">
-          <Routes>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/transactions" element={<TransactionsPage />} />
-            <Route path="/analytics" element={<AnalyticsPage />} />
-          </Routes>
+          <Suspense fallback={<PageLoader />}>
+            <Routes>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/analytics" element={<AnalyticsPage />} />
+            </Routes>
+          </Suspense>
         </main>
       </div>
     </div>
