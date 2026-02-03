@@ -94,7 +94,7 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* User Profile Section */}
+      {/* User Profile Section - Hidden for V1, enable after Settings implementation
       <div className="py-4 border-t border-white/[0.04]">
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
           <div className="relative flex-shrink-0">
@@ -116,6 +116,7 @@ const Sidebar = () => {
           )}
         </div>
       </div>
+      */}
     </aside>
   );
 };
