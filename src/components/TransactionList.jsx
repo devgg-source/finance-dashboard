@@ -2,10 +2,12 @@ import { useState } from 'react';
 import { Trash2, ArrowUpRight, ArrowDownRight, Wallet, Loader2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
+import { useSettings } from '../context/SettingsContext';
 
 const TransactionList = ({ limit }) => {
   const { transactions, deleteTransaction, getCategoryById } = useFinance();
   const toast = useToast();
+  const { formatCurrency } = useSettings();
   const [deletingId, setDeletingId] = useState(null);
   
   const displayTransactions = limit ? transactions.slice(0, limit) : transactions;
@@ -21,14 +23,6 @@ const TransactionList = ({ limit }) => {
     } finally {
       setDeletingId(null);
     }
-  };
-
-  const formatAmount = (value) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(value);
   };
 
   const formatDate = (dateStr) => {
@@ -98,7 +92,7 @@ const TransactionList = ({ limit }) => {
             <div className="flex items-center gap-3">
               <div className="text-right">
                 <p className={`font-semibold text-sm ${typeConfig.color}`}>
-                  {typeConfig.sign}{formatAmount(transaction.amount)}
+                  {typeConfig.sign}{formatCurrency(transaction.amount)}
                 </p>
               </div>
               

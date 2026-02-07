@@ -1,6 +1,9 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
+import { useSettings } from '../context/SettingsContext';
 
 const StatCard = ({ title, amount, icon: Icon, trend, trendValue, color = 'primary' }) => {
+  const { formatCurrency } = useSettings();
+  
   const colorConfig = {
     primary: {
       gradient: 'from-indigo-500 to-purple-600',
@@ -30,14 +33,6 @@ const StatCard = ({ title, amount, icon: Icon, trend, trendValue, color = 'prima
 
   const config = colorConfig[color] || colorConfig.primary;
 
-  const formatAmount = (value) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0,
-    }).format(value);
-  };
-
   return (
     <div className="group relative bg-[#12121a] rounded-2xl p-6 border border-white/[0.06] hover:border-white/[0.1] transition-all duration-300 overflow-hidden">
       {/* Subtle gradient overlay on hover */}
@@ -46,7 +41,7 @@ const StatCard = ({ title, amount, icon: Icon, trend, trendValue, color = 'prima
       <div className="relative flex items-start justify-between">
         <div className="space-y-3">
           <p className="text-slate-400 text-sm font-medium">{title}</p>
-          <h3 className="text-2xl font-bold text-white tracking-tight">{formatAmount(amount)}</h3>
+          <h3 className="text-2xl font-bold text-white tracking-tight">{formatCurrency(amount)}</h3>
           
           <div className="flex items-center gap-2">
             {trendValue === 0 ? (

@@ -141,10 +141,20 @@ export const authService = {
     return data;
   },
 
-  // Update user profile
+  // Update user profile (display name, etc.)
   async updateProfile(updates) {
     const { data, error } = await supabase.auth.updateUser({
       data: updates
+    });
+    
+    if (error) throw error;
+    return data;
+  },
+
+  // Update email address (requires confirmation)
+  async updateEmail(newEmail) {
+    const { data, error } = await supabase.auth.updateUser({
+      email: newEmail
     });
     
     if (error) throw error;

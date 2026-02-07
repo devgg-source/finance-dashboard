@@ -14,7 +14,9 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
+import EditProfileForm from '../components/settings/EditProfileForm';
 import ChangePasswordForm from '../components/settings/ChangePasswordForm';
+import AppearanceForm from '../components/settings/AppearanceForm';
 import ConfirmDialog from '../components/ui/ConfirmDialog';
 import Button from '../components/ui/Button';
 
@@ -23,14 +25,13 @@ const SettingsPage = () => {
   const { transactions, clearAllData } = useFinance();
   const toast = useToast();
 
-  // Get user info
-  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
-  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
-
   // State
   const [isDeletingData, setIsDeletingData] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Get display name for export
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
 
   /* TODO: Implement these features in future versions
   // Profile form state
@@ -231,91 +232,14 @@ const SettingsPage = () => {
       </div>
       */}
 
-      {/* Profile Section - Display Only */}
-      <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
-        <h3 className="text-lg font-semibold text-white mb-6">Profile</h3>
-        
-        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-          {/* Avatar */}
-          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-            <span className="text-3xl font-bold text-white">{initials}</span>
-          </div>
-
-          {/* Profile Info */}
-          <div className="flex-1">
-            <h4 className="text-lg font-medium text-white">{displayName}</h4>
-            <p className="text-slate-500 text-sm mt-1">{user?.email}</p>
-            <p className="text-xs text-slate-600 mt-3">
-              Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
-            </p>
-          </div>
-        </div>
-      </div>
+      {/* Profile Section */}
+      <EditProfileForm />
 
       {/* Change Password Section */}
       <ChangePasswordForm />
 
-      {/* TODO: Appearance Section - Implement theme persistence
-      <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
-        <h3 className="text-lg font-semibold text-white mb-6">Appearance</h3>
-        
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-400 mb-3">Theme</label>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { id: 'light', label: 'Light', icon: Sun },
-              { id: 'dark', label: 'Dark', icon: Moon },
-              { id: 'system', label: 'System', icon: Globe }
-            ].map((theme) => (
-              <button
-                key={theme.id}
-                onClick={() => setSettings(prev => ({ ...prev, theme: theme.id }))}
-                className={`flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${
-                  settings.theme === theme.id
-                    ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400'
-                    : 'border-white/[0.06] bg-white/[0.02] text-slate-400 hover:border-white/[0.1]'
-                }`}
-              >
-                <theme.icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{theme.label}</span>
-                {settings.theme === theme.id && (
-                  <Check className="w-4 h-4 ml-1" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Currency</label>
-            <select
-              value={settings.currency}
-              onChange={(e) => setSettings(prev => ({ ...prev, currency: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all cursor-pointer"
-            >
-              <option value="INR">Indian Rupee (₹)</option>
-              <option value="USD">US Dollar ($)</option>
-              <option value="EUR">Euro (€)</option>
-              <option value="GBP">British Pound (£)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Language</label>
-            <select
-              value={settings.language}
-              onChange={(e) => setSettings(prev => ({ ...prev, language: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all cursor-pointer"
-            >
-              <option value="en">English</option>
-              <option value="hi">Hindi</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-            </select>
-          </div>
-        </div>
-      </div>
-      */}
+      {/* Appearance Section */}
+      <AppearanceForm />
 
       {/* TODO: Notifications Section - Implement notification system
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">

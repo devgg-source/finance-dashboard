@@ -2,6 +2,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
+import { SettingsProvider } from './context/SettingsContext';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
@@ -168,43 +169,45 @@ const AppLayout = () => {
 // Main App Component
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <Router>
-          <Suspense fallback={<Loader fullscreen />}>
-            <Routes>
-              {/* Public Routes */}
-              <Route path="/login" element={
-                <PublicRoute>
-                  <LoginPage />
-                </PublicRoute>
-              } />
-              <Route path="/signup" element={
-                <PublicRoute>
-                  <SignupPage />
-                </PublicRoute>
-              } />
-              <Route path="/forgot-password" element={
-                <PublicRoute>
-                  <ForgotPasswordPage />
-                </PublicRoute>
-              } />
+    <SettingsProvider>
+      <ToastProvider>
+        <AuthProvider>
+          <Router>
+            <Suspense fallback={<Loader fullscreen />}>
+              <Routes>
+                {/* Public Routes */}
+                <Route path="/login" element={
+                  <PublicRoute>
+                    <LoginPage />
+                  </PublicRoute>
+                } />
+                <Route path="/signup" element={
+                  <PublicRoute>
+                    <SignupPage />
+                  </PublicRoute>
+                } />
+                <Route path="/forgot-password" element={
+                  <PublicRoute>
+                    <ForgotPasswordPage />
+                  </PublicRoute>
+                } />
 
-              {/* Protected Routes */}
-              <Route path="/*" element={
-                <ProtectedRoute>
-                  <FinanceProvider>
-                    <SidebarProvider>
-                      <AppLayout />
-                    </SidebarProvider>
-                  </FinanceProvider>
-                </ProtectedRoute>
-              } />
-            </Routes>
-          </Suspense>
-        </Router>
-      </AuthProvider>
-    </ToastProvider>
+                {/* Protected Routes */}
+                <Route path="/*" element={
+                  <ProtectedRoute>
+                    <FinanceProvider>
+                      <SidebarProvider>
+                        <AppLayout />
+                      </SidebarProvider>
+                    </FinanceProvider>
+                  </ProtectedRoute>
+                } />
+              </Routes>
+            </Suspense>
+          </Router>
+        </AuthProvider>
+      </ToastProvider>
+    </SettingsProvider>
   );
 }
 

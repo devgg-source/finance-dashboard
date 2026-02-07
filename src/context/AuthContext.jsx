@@ -110,6 +110,17 @@ export const AuthProvider = ({ children }) => {
     }
   }, []);
 
+  // Refresh user data from server
+  const refreshUser = useCallback(async () => {
+    try {
+      const user = await authService.getUser();
+      setUser(user);
+      return { error: null };
+    } catch (error) {
+      return { error };
+    }
+  }, []);
+
   // Get user display name
   const getUserDisplayName = useCallback(() => {
     if (!user) return '';
@@ -134,6 +145,7 @@ export const AuthProvider = ({ children }) => {
     resetPassword,
     updatePassword,
     updateProfile,
+    refreshUser,
     getUserDisplayName,
     getUserInitials
   };
