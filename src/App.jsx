@@ -9,6 +9,7 @@ import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
 import { useFinance } from './context/FinanceContext';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2 } from 'lucide-react';
+import Loader from './components/ui/Loader';
 import './index.css';
 
 // Lazy load pages and heavy components
@@ -27,42 +28,12 @@ const Charts = lazy(() => import('./components/Charts').then(module => ({
   )
 })));
 
-// Loading Spinner Component
-const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-[400px]">
-    <div className="text-center">
-      <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
-      <p className="text-slate-400 text-sm">Loading...</p>
-    </div>
-  </div>
-);
-
-// Page Loading Fallback
-const PageLoader = () => (
-  <div className="flex items-center justify-center min-h-[60vh]">
-    <div className="text-center">
-      <Loader2 className="w-10 h-10 text-indigo-500 animate-spin mx-auto mb-4" />
-      <p className="text-slate-400 text-sm">Loading page...</p>
-    </div>
-  </div>
-);
-
-// Full Screen Loading (for auth check)
-const FullScreenLoader = () => (
-  <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
-    <div className="text-center">
-      <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mx-auto mb-4" />
-      <p className="text-slate-400 text-sm">Loading...</p>
-    </div>
-  </div>
-);
-
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
   const { isAuthenticated, isLoading, isInitialized } = useAuth();
 
   if (!isInitialized || isLoading) {
-    return <FullScreenLoader />;
+    return <Loader fullscreen />;
   }
 
   if (!isAuthenticated) {
@@ -77,7 +48,7 @@ const PublicRoute = ({ children }) => {
   const { isAuthenticated, isLoading, isInitialized } = useAuth();
 
   if (!isInitialized || isLoading) {
-    return <FullScreenLoader />;
+    return <Loader fullscreen />;
   }
 
   if (isAuthenticated) {
@@ -92,7 +63,7 @@ const Dashboard = () => {
   const { totals, balance, monthlyTrends, isLoading } = useFinance();
 
   if (isLoading) {
-    return <LoadingSpinner />;
+    return <Loader />;
   }
 
   return (
@@ -180,7 +151,7 @@ const AppLayout = () => {
         }`}
       >
         <main className="min-h-screen p-6 lg:p-8">
-          <Suspense fallback={<PageLoader />}>
+          <Suspense fallback={<Loader size="lg" />}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/transactions" element={<TransactionsPage />} />
@@ -200,7 +171,7 @@ function App() {
     <ToastProvider>
       <AuthProvider>
         <Router>
-          <Suspense fallback={<FullScreenLoader />}>
+          <Suspense fallback={<Loader fullscreen />}>
             <Routes>
               {/* Public Routes */}
               <Route path="/login" element={
