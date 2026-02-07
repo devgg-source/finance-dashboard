@@ -9,13 +9,14 @@ import {
   ChevronRight,
   Moon,
   Sun,
-  Check,
-  Loader2
+  Check
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
 import ChangePasswordForm from '../components/settings/ChangePasswordForm';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+import Button from '../components/ui/Button';
 
 const SettingsPage = () => {
   const { user } = useAuth();
@@ -34,6 +35,7 @@ const SettingsPage = () => {
   const [isSavingProfile, setIsSavingProfile] = useState(false);
   const [isDeletingData, setIsDeletingData] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Settings state
   const [settings, setSettings] = useState({
@@ -117,15 +119,16 @@ const SettingsPage = () => {
   };
 
   // Delete all user data
-  const handleDeleteAllData = async () => {
-    if (!confirm('Are you sure you want to delete all your transaction data? This action cannot be undone.')) {
-      return;
-    }
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
 
+  const handleDeleteConfirm = async () => {
     setIsDeletingData(true);
     try {
       await clearAllData();
       toast.success('All data deleted successfully');
+      setShowDeleteDialog(false);
     } catch (error) {
       toast.error('Failed to delete data');
     } finally {
@@ -392,24 +395,37 @@ const SettingsPage = () => {
         <p className="text-slate-500 text-sm mb-6">Export or delete your data</p>
         
         <div className="flex flex-col sm:flex-row gap-3">
-          <button 
+          <Button 
             onClick={handleExportData}
-            disabled={isExporting}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-50 border border-white/[0.06] rounded-xl text-white text-sm font-medium transition-colors"
+            isLoading={isExporting}
+            variant="secondary"
+            icon={Download}
           >
-            {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Export All Data
-          </button>
-          <button 
-            onClick={handleDeleteAllData}
-            disabled={isDeletingData}
-            className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-500/10 hover:bg-rose-500/20 disabled:opacity-50 border border-rose-500/20 rounded-xl text-rose-400 text-sm font-medium transition-colors"
+          </Button>
+          <Button 
+            onClick={handleDeleteClick}
+            variant="danger"
+            icon={Trash2}
           >
-            {isDeletingData ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
             Delete All Data
-          </button>
+          </Button>
         </div>
       </div>
+
+      {/* Delete Data Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete All Data"
+        message="Are you sure you want to delete all your transaction data? This action cannot be undone and all your financial records will be permanently removed."
+        confirmLabel="Delete All"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        isLoading={isDeletingData}
+        icon={Trash2}
+      />
 
       {/* Footer */}
       <div className="text-center py-4">

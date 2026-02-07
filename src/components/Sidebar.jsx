@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { useSidebar } from '../context/SidebarContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
@@ -17,16 +19,26 @@ const Sidebar = () => {
   const { addToast } = useToast();
   const navigate = useNavigate();
 
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
   // Get user display name and initials
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
-  const handleLogout = async () => {
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    setIsLoggingOut(true);
     try {
       await signOut();
+      setShowLogoutDialog(false);
       navigate('/login', { state: { loggedOut: true } });
     } catch (error) {
       addToast('Failed to logout', 'error');
+      setIsLoggingOut(false);
     }
   };
 
@@ -124,7 +136,7 @@ const Sidebar = () => {
             {/* Logout tooltip for collapsed state */}
             {isCollapsed && (
               <button 
-                onClick={handleLogout}
+                onClick={handleLogoutClick}
                 className="absolute left-full ml-2 px-2.5 py-1.5 bg-[#1e1e28] text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 whitespace-nowrap shadow-xl z-50 hover:bg-red-500/20 hover:text-red-400"
               >
                 Logout
@@ -138,7 +150,7 @@ const Sidebar = () => {
                 <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
               </div>
               <button 
-                onClick={handleLogout}
+                onClick={handleLogoutClick}
                 className="p-1.5 text-slate-500 hover:text-red-400 rounded transition-colors"
                 title="Logout"
               >
@@ -148,6 +160,20 @@ const Sidebar = () => {
           )}
         </div>
       </div>
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={handleLogoutConfirm}
+        title="Logout"
+        message="Are you sure you want to logout? You will need to sign in again to access your account."
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        isLoading={isLoggingOut}
+        icon={LogOut}
+      />
     </aside>
   );
 };
