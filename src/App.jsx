@@ -1,8 +1,9 @@
 import { lazy, Suspense } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
 import { ToastProvider } from './context/ToastContext';
+import { AuthProvider, useAuth } from './context/AuthContext';
 import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
@@ -13,6 +14,10 @@ import './index.css';
 // Lazy load pages and heavy components
 const TransactionsPage = lazy(() => import('./pages/TransactionsPage'));
 const AnalyticsPage = lazy(() => import('./pages/AnalyticsPage'));
+const SettingsPage = lazy(() => import('./pages/SettingsPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const SignupPage = lazy(() => import('./pages/SignupPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
 const Charts = lazy(() => import('./components/Charts').then(module => ({
   default: () => (
     <>
@@ -41,6 +46,46 @@ const PageLoader = () => (
     </div>
   </div>
 );
+
+// Full Screen Loading (for auth check)
+const FullScreenLoader = () => (
+  <div className="min-h-screen bg-[#0a0a0f] flex items-center justify-center">
+    <div className="text-center">
+      <Loader2 className="w-12 h-12 text-indigo-500 animate-spin mx-auto mb-4" />
+      <p className="text-slate-400 text-sm">Loading...</p>
+    </div>
+  </div>
+);
+
+// Protected Route Component
+const ProtectedRoute = ({ children }) => {
+  const { isAuthenticated, isLoading, isInitialized } = useAuth();
+
+  if (!isInitialized || isLoading) {
+    return <FullScreenLoader />;
+  }
+
+  if (!isAuthenticated) {
+    return <Navigate to="/login" replace />;
+  }
+
+  return children;
+};
+
+// Public Route Component (redirect to dashboard if authenticated)
+const PublicRoute = ({ children }) => {
+  const { isAuthenticated, isLoading, isInitialized } = useAuth();
+
+  if (!isInitialized || isLoading) {
+    return <FullScreenLoader />;
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />;
+  }
+
+  return children;
+};
 
 // Dashboard Page Component
 const Dashboard = () => {
@@ -140,6 +185,7 @@ const AppLayout = () => {
               <Route path="/" element={<Dashboard />} />
               <Route path="/transactions" element={<TransactionsPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
+              <Route path="/settings" element={<SettingsPage />} />
             </Routes>
           </Suspense>
         </main>
@@ -152,13 +198,41 @@ const AppLayout = () => {
 function App() {
   return (
     <ToastProvider>
-      <FinanceProvider>
-        <SidebarProvider>
-          <Router>
-            <AppLayout />
-          </Router>
-        </SidebarProvider>
-      </FinanceProvider>
+      <AuthProvider>
+        <Router>
+          <Suspense fallback={<FullScreenLoader />}>
+            <Routes>
+              {/* Public Routes */}
+              <Route path="/login" element={
+                <PublicRoute>
+                  <LoginPage />
+                </PublicRoute>
+              } />
+              <Route path="/signup" element={
+                <PublicRoute>
+                  <SignupPage />
+                </PublicRoute>
+              } />
+              <Route path="/forgot-password" element={
+                <PublicRoute>
+                  <ForgotPasswordPage />
+                </PublicRoute>
+              } />
+
+              {/* Protected Routes */}
+              <Route path="/*" element={
+                <ProtectedRoute>
+                  <FinanceProvider>
+                    <SidebarProvider>
+                      <AppLayout />
+                    </SidebarProvider>
+                  </FinanceProvider>
+                </ProtectedRoute>
+              } />
+            </Routes>
+          </Suspense>
+        </Router>
+      </AuthProvider>
     </ToastProvider>
   );
 }
