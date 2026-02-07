@@ -1,9 +1,7 @@
 import { useState } from 'react';
 import { 
-  User, 
   Bell, 
   Shield, 
-  Palette, 
   Globe, 
   CreditCard,
   Download,
@@ -12,18 +10,17 @@ import {
   Moon,
   Sun,
   Check,
-  Camera,
   Loader2
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
-import { transactionService } from '../services/supabase';
+import ChangePasswordForm from '../components/settings/ChangePasswordForm';
 
 const SettingsPage = () => {
   const { user } = useAuth();
   const { transactions, clearAllData } = useFinance();
-  const { addToast } = useToast();
+  const toast = useToast();
 
   // Get user info
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
@@ -80,7 +77,7 @@ const SettingsPage = () => {
   // Export transactions as JSON
   const handleExportData = async () => {
     if (transactions.length === 0) {
-      addToast('No data to export', 'warning');
+      toast.warning('No data to export');
       return;
     }
 
@@ -111,9 +108,9 @@ const SettingsPage = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      addToast('Data exported successfully', 'success');
+      toast.success('Data exported successfully');
     } catch (error) {
-      addToast('Failed to export data', 'error');
+      toast.error('Failed to export data');
     } finally {
       setIsExporting(false);
     }
@@ -128,9 +125,9 @@ const SettingsPage = () => {
     setIsDeletingData(true);
     try {
       await clearAllData();
-      addToast('All data deleted successfully', 'success');
+      toast.success('All data deleted successfully');
     } catch (error) {
-      addToast('Failed to delete data', 'error');
+      toast.error('Failed to delete data');
     } finally {
       setIsDeletingData(false);
     }
@@ -225,6 +222,9 @@ const SettingsPage = () => {
           </button>
         </div>
       </div>
+
+      {/* Change Password Section */}
+      <ChangePasswordForm />
 
       {/* Appearance Section */}
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
