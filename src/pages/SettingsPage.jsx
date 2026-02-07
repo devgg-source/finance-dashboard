@@ -12,10 +12,32 @@ import {
   Moon,
   Sun,
   Check,
-  Camera
+  Camera,
+  Loader2
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useFinance } from '../context/FinanceContext';
+import { useToast } from '../context/ToastContext';
+import { transactionService } from '../services/supabase';
 
 const SettingsPage = () => {
+  const { user } = useAuth();
+  const { transactions, clearAllData } = useFinance();
+  const { addToast } = useToast();
+
+  // Get user info
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  // Profile form state
+  const [profileForm, setProfileForm] = useState({
+    fullName: user?.user_metadata?.full_name || '',
+    email: user?.email || ''
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+  const [isDeletingData, setIsDeletingData] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+
   // Settings state
   const [settings, setSettings] = useState({
     theme: 'dark',
@@ -53,6 +75,65 @@ const SettingsPage = () => {
         [key]: !prev.privacy[key]
       }
     }));
+  };
+
+  // Export transactions as JSON
+  const handleExportData = async () => {
+    if (transactions.length === 0) {
+      addToast('No data to export', 'warning');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        user: {
+          email: user?.email,
+          name: displayName
+        },
+        transactions: transactions.map(t => ({
+          type: t.type,
+          category: t.category,
+          description: t.description,
+          amount: t.amount,
+          date: t.date
+        }))
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finance-data-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      addToast('Data exported successfully', 'success');
+    } catch (error) {
+      addToast('Failed to export data', 'error');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Delete all user data
+  const handleDeleteAllData = async () => {
+    if (!confirm('Are you sure you want to delete all your transaction data? This action cannot be undone.')) {
+      return;
+    }
+
+    setIsDeletingData(true);
+    try {
+      await clearAllData();
+      addToast('All data deleted successfully', 'success');
+    } catch (error) {
+      addToast('Failed to delete data', 'error');
+    } finally {
+      setIsDeletingData(false);
+    }
   };
 
   // Toggle Switch Component
@@ -103,11 +184,8 @@ const SettingsPage = () => {
           {/* Avatar */}
           <div className="relative group">
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <span className="text-3xl font-bold text-white">JD</span>
+              <span className="text-3xl font-bold text-white">{initials}</span>
             </div>
-            <button className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-              <Camera className="w-6 h-6 text-white" />
-            </button>
           </div>
 
           {/* Profile Info */}
@@ -117,7 +195,8 @@ const SettingsPage = () => {
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">Full Name</label>
                 <input
                   type="text"
-                  defaultValue="John Doe"
+                  value={profileForm.fullName}
+                  onChange={(e) => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
                   className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                 />
               </div>
@@ -125,16 +204,23 @@ const SettingsPage = () => {
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">Email</label>
                 <input
                   type="email"
-                  defaultValue="john@example.com"
-                  className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                  value={profileForm.email}
+                  disabled
+                  className="w-full px-4 py-2.5 bg-white/[0.02] border border-white/[0.04] rounded-xl text-slate-500 text-sm cursor-not-allowed"
                 />
               </div>
             </div>
+            <p className="text-xs text-slate-600">Email cannot be changed. Contact support for assistance.</p>
           </div>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-white/[0.06] flex justify-end">
-          <button className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl transition-colors">
+        <div className="mt-6 pt-6 border-t border-white/[0.06] flex items-center justify-between">
+          <p className="text-xs text-slate-600">Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}</p>
+          <button 
+            disabled={isSavingProfile}
+            className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-500/50 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2"
+          >
+            {isSavingProfile && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Changes
           </button>
         </div>
@@ -306,20 +392,28 @@ const SettingsPage = () => {
         <p className="text-slate-500 text-sm mb-6">Export or delete your data</p>
         
         <div className="flex flex-col sm:flex-row gap-3">
-          <button className="flex items-center justify-center gap-2 px-4 py-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-white text-sm font-medium transition-colors">
-            <Download className="w-4 h-4" />
+          <button 
+            onClick={handleExportData}
+            disabled={isExporting}
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-white/[0.04] hover:bg-white/[0.08] disabled:opacity-50 border border-white/[0.06] rounded-xl text-white text-sm font-medium transition-colors"
+          >
+            {isExporting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
             Export All Data
           </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-rose-400 text-sm font-medium transition-colors">
-            <Trash2 className="w-4 h-4" />
-            Delete Account
+          <button 
+            onClick={handleDeleteAllData}
+            disabled={isDeletingData}
+            className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-500/10 hover:bg-rose-500/20 disabled:opacity-50 border border-rose-500/20 rounded-xl text-rose-400 text-sm font-medium transition-colors"
+          >
+            {isDeletingData ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Delete All Data
           </button>
         </div>
       </div>
 
       {/* Footer */}
       <div className="text-center py-4">
-        <p className="text-slate-600 text-sm">Finance Dashboard v1.0.0</p>
+        <p className="text-slate-600 text-sm">Finance Dashboard v2.0.0</p>
         <p className="text-slate-600 text-xs mt-1">Made with ❤️ for portfolio</p>
       </div>
     </div>
