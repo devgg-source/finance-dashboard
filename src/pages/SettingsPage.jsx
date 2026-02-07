@@ -1,15 +1,15 @@
 import { useState } from 'react';
 import { 
-  Bell, 
-  Shield, 
-  Globe, 
-  CreditCard,
+  // Bell, 
+  // Shield, 
+  // Globe, 
+  // CreditCard,
   Download,
   Trash2,
-  ChevronRight,
-  Moon,
-  Sun,
-  Check
+  // ChevronRight,
+  // Moon,
+  // Sun,
+  // Check
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
@@ -27,15 +27,18 @@ const SettingsPage = () => {
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
   const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
 
+  // State
+  const [isDeletingData, setIsDeletingData] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  /* TODO: Implement these features in future versions
   // Profile form state
   const [profileForm, setProfileForm] = useState({
     fullName: user?.user_metadata?.full_name || '',
     email: user?.email || ''
   });
   const [isSavingProfile, setIsSavingProfile] = useState(false);
-  const [isDeletingData, setIsDeletingData] = useState(false);
-  const [isExporting, setIsExporting] = useState(false);
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   // Settings state
   const [settings, setSettings] = useState({
@@ -75,6 +78,7 @@ const SettingsPage = () => {
       }
     }));
   };
+  */
 
   // Export transactions as JSON
   const handleExportData = async () => {
@@ -136,6 +140,7 @@ const SettingsPage = () => {
     }
   };
 
+  /* TODO: Implement Toggle components in future versions
   // Toggle Switch Component
   const ToggleSwitch = ({ enabled, onChange }) => (
     <button
@@ -167,6 +172,7 @@ const SettingsPage = () => {
       {action}
     </div>
   );
+  */
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -176,19 +182,17 @@ const SettingsPage = () => {
         <p className="text-slate-500 mt-1 text-sm">Manage your account and preferences</p>
       </div>
 
-      {/* Profile Section */}
+      {/* Profile Section - TODO: Implement profile update
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <h3 className="text-lg font-semibold text-white mb-6">Profile</h3>
         
         <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-          {/* Avatar */}
           <div className="relative group">
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
               <span className="text-3xl font-bold text-white">{initials}</span>
             </div>
           </div>
 
-          {/* Profile Info */}
           <div className="flex-1 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
@@ -225,15 +229,36 @@ const SettingsPage = () => {
           </button>
         </div>
       </div>
+      */}
+
+      {/* Profile Section - Display Only */}
+      <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
+        <h3 className="text-lg font-semibold text-white mb-6">Profile</h3>
+        
+        <div className="flex flex-col sm:flex-row sm:items-center gap-6">
+          {/* Avatar */}
+          <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+            <span className="text-3xl font-bold text-white">{initials}</span>
+          </div>
+
+          {/* Profile Info */}
+          <div className="flex-1">
+            <h4 className="text-lg font-medium text-white">{displayName}</h4>
+            <p className="text-slate-500 text-sm mt-1">{user?.email}</p>
+            <p className="text-xs text-slate-600 mt-3">
+              Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}
+            </p>
+          </div>
+        </div>
+      </div>
 
       {/* Change Password Section */}
       <ChangePasswordForm />
 
-      {/* Appearance Section */}
+      {/* TODO: Appearance Section - Implement theme persistence
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <h3 className="text-lg font-semibold text-white mb-6">Appearance</h3>
         
-        {/* Theme Selection */}
         <div className="mb-6">
           <label className="block text-sm font-medium text-slate-400 mb-3">Theme</label>
           <div className="grid grid-cols-3 gap-3">
@@ -261,7 +286,6 @@ const SettingsPage = () => {
           </div>
         </div>
 
-        {/* Currency & Language */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-slate-400 mb-2">Currency</label>
@@ -291,8 +315,9 @@ const SettingsPage = () => {
           </div>
         </div>
       </div>
+      */}
 
-      {/* Notifications Section */}
+      {/* TODO: Notifications Section - Implement notification system
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <h3 className="text-lg font-semibold text-white mb-2">Notifications</h3>
         <p className="text-slate-500 text-sm mb-6">Manage how you receive notifications</p>
@@ -345,8 +370,9 @@ const SettingsPage = () => {
           />
         </div>
       </div>
+      */}
 
-      {/* Privacy & Security Section */}
+      {/* TODO: Privacy & Security Section - Implement 2FA and connected accounts
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <h3 className="text-lg font-semibold text-white mb-2">Privacy & Security</h3>
         <p className="text-slate-500 text-sm mb-6">Protect your account and data</p>
@@ -388,6 +414,7 @@ const SettingsPage = () => {
           />
         </div>
       </div>
+      */}
 
       {/* Data Management Section */}
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
