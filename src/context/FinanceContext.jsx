@@ -1,6 +1,6 @@
 import { createContext, useContext, useState, useMemo, useEffect, useCallback } from 'react';
 import { categories } from '../data/mockData';
-import dbService from '../services/indexedDB';
+import { transactionService } from '../services/supabase';
 
 const FinanceContext = createContext();
 
@@ -17,39 +17,31 @@ export const FinanceProvider = ({ children }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isInitialized, setIsInitialized] = useState(false);
 
-  // Initialize database and load data
+  // Load transactions from Supabase
   useEffect(() => {
-    const initializeData = async () => {
+    const loadTransactions = async () => {
       try {
         setIsLoading(true);
-        
-        // Initialize IndexedDB
-        await dbService.init();
-        
-        // Load existing transactions from IndexedDB
-        const storedTransactions = await dbService.getAllTransactions();
-        setTransactions(storedTransactions);
-        
+        const data = await transactionService.getAll();
+        setTransactions(data || []);
         setIsInitialized(true);
       } catch (error) {
-        // Start with empty state if IndexedDB fails
+        console.error('Failed to load transactions:', error);
         setTransactions([]);
       } finally {
         setIsLoading(false);
       }
     };
 
-    initializeData();
+    loadTransactions();
   }, []);
 
   // Add new transaction
   const addTransaction = useCallback(async (transaction) => {
     try {
-      // Add to IndexedDB first
-      await dbService.addTransaction(transaction);
-      
-      // Then update state
-      setTransactions(prev => [transaction, ...prev]);
+      const newTransaction = await transactionService.add(transaction);
+      setTransactions(prev => [newTransaction, ...prev]);
+      return newTransaction;
     } catch (error) {
       throw error;
     }
@@ -58,10 +50,7 @@ export const FinanceProvider = ({ children }) => {
   // Delete transaction
   const deleteTransaction = useCallback(async (id) => {
     try {
-      // Delete from IndexedDB first
-      await dbService.deleteTransaction(id);
-      
-      // Then update state
+      await transactionService.delete(id);
       setTransactions(prev => prev.filter(t => t.id !== id));
     } catch (error) {
       throw error;
@@ -71,13 +60,11 @@ export const FinanceProvider = ({ children }) => {
   // Update transaction
   const updateTransaction = useCallback(async (transaction) => {
     try {
-      // Update in IndexedDB first
-      await dbService.updateTransaction(transaction);
-      
-      // Then update state
+      const updated = await transactionService.update(transaction);
       setTransactions(prev => 
-        prev.map(t => t.id === transaction.id ? transaction : t)
+        prev.map(t => t.id === transaction.id ? updated : t)
       );
+      return updated;
     } catch (error) {
       throw error;
     }
@@ -86,10 +73,23 @@ export const FinanceProvider = ({ children }) => {
   // Clear all data
   const clearAllData = useCallback(async () => {
     try {
-      await dbService.clearAllTransactions();
+      await transactionService.clearAll();
       setTransactions([]);
     } catch (error) {
       throw error;
+    }
+  }, []);
+
+  // Refresh transactions from server
+  const refreshTransactions = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const data = await transactionService.getAll();
+      setTransactions(data || []);
+    } catch (error) {
+      console.error('Failed to refresh transactions:', error);
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -240,6 +240,7 @@ export const FinanceProvider = ({ children }) => {
     deleteTransaction,
     updateTransaction,
     clearAllData,
+    refreshTransactions,
     getCategoryById
   };
 

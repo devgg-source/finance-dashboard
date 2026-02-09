@@ -1,12 +1,20 @@
-# Finance Dashboard v1.0
+# Finance Dashboard v2.0
 
-A modern, elegant personal finance dashboard built with React. Track your income, expenses, and savings with beautiful visualizations and a sleek dark UI.
+A modern, elegant personal finance dashboard built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, user authentication, and cloud sync.
 
-![Finance Dashboard](https://img.shields.io/badge/version-1.0.0-blue.svg)
+![Finance Dashboard](https://img.shields.io/badge/version-2.0.0-blue.svg)
 ![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC.svg)
+![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E.svg)
 
 ## ✨ Features
+
+### 🔐 Authentication
+- **User Registration** - Sign up with email and password
+- **Secure Login** - Email/password authentication via Supabase
+- **Password Recovery** - Forgot password with email reset link
+- **Password Change** - Update password from settings
+- **Protected Routes** - Secure access to dashboard features
 
 ### Dashboard
 - **Real-time Statistics** - View total balance, income, expenses, and savings at a glance
@@ -16,9 +24,9 @@ A modern, elegant personal finance dashboard built with React. Track your income
 
 ### Transactions
 - **Full CRUD Operations** - Add, view, and delete transactions
+- **Cloud Sync** - All transactions stored in Supabase database
 - **Smart Filtering** - Filter by type (income/expense/savings), category, or search by description
 - **Category Management** - Organized categories with icons for easy identification
-- **Persistent Storage** - All data saved locally using IndexedDB
 
 ### Analytics
 - **Income vs Expenses** - 6-month trend visualization
@@ -26,14 +34,21 @@ A modern, elegant personal finance dashboard built with React. Track your income
 - **Category Breakdown** - See where your money goes with detailed pie charts
 - **Key Metrics** - Average income, expense, and transaction counts
 
+### ⚙️ Settings
+- **Profile Management** - Update display name and email
+- **Password Security** - Change password with validation
+- **Currency Preferences** - Choose from INR, USD, EUR, GBP
+- **Data Export** - Export all transactions as JSON
+- **Data Management** - Delete all transaction data with confirmation
+
 ## 🛠️ Tech Stack
 
 - **Frontend Framework**: React 18.2 with Vite
 - **Styling**: Tailwind CSS 3.x
+- **Backend**: Supabase (Auth + PostgreSQL)
 - **Charts**: Recharts
 - **Icons**: Lucide React
 - **Routing**: React Router DOM 6
-- **Storage**: IndexedDB (persistent local storage)
 - **State Management**: React Context API
 
 ## 🚀 Getting Started
@@ -41,6 +56,7 @@ A modern, elegant personal finance dashboard built with React. Track your income
 ### Prerequisites
 - Node.js 16+ 
 - npm or yarn
+- Supabase account
 
 ### Installation
 
@@ -48,6 +64,7 @@ A modern, elegant personal finance dashboard built with React. Track your income
 ```bash
 git clone https://github.com/devgg-source/finance-dashboard.git
 cd finance-dashboard
+git checkout finance-dashboard-v2
 ```
 
 2. Install dependencies
@@ -55,12 +72,58 @@ cd finance-dashboard
 npm install
 ```
 
-3. Start the development server
+3. Set up environment variables
+```bash
+# Create .env file in root directory
+VITE_SUPABASE_URL=your_supabase_project_url
+VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_anon_key
+```
+
+4. Set up Supabase database
+
+Create a `transactions` table in your Supabase project:
+```sql
+create table transactions (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  type text not null check (type in ('income', 'expense', 'savings')),
+  category text not null,
+  description text,
+  amount numeric not null,
+  date date not null,
+  created_at timestamp with time zone default now()
+);
+
+-- Enable Row Level Security
+alter table transactions enable row level security;
+
+-- Policy: Users can only see their own transactions
+create policy "Users can view own transactions"
+  on transactions for select
+  using (auth.uid() = user_id);
+
+-- Policy: Users can insert their own transactions
+create policy "Users can insert own transactions"
+  on transactions for insert
+  with check (auth.uid() = user_id);
+
+-- Policy: Users can update their own transactions
+create policy "Users can update own transactions"
+  on transactions for update
+  using (auth.uid() = user_id);
+
+-- Policy: Users can delete their own transactions
+create policy "Users can delete own transactions"
+  on transactions for delete
+  using (auth.uid() = user_id);
+```
+
+5. Start the development server
 ```bash
 npm run dev
 ```
 
-4. Open your browser and visit `http://localhost:5173`
+6. Open your browser and visit `http://localhost:5173`
 
 ### Build for Production
 
@@ -76,22 +139,35 @@ The build output will be in the `dist` folder.
 src/
 ├── components/          # Reusable UI components
 │   ├── Charts.jsx       # Area and Pie chart components
-│   ├── Sidebar.jsx      # Collapsible navigation sidebar
+│   ├── Sidebar.jsx      # Collapsible navigation with user info
 │   ├── StatCard.jsx     # Statistics display cards
 │   ├── Toast.jsx        # Notification component
-│   └── TransactionList.jsx
+│   ├── TransactionList.jsx
+│   ├── settings/        # Settings components
+│   │   ├── ChangePasswordForm.jsx
+│   │   ├── EditProfileForm.jsx
+│   │   └── AppearanceForm.jsx
+│   └── ui/              # Reusable UI primitives
+│       ├── Button.jsx
+│       ├── ConfirmDialog.jsx
+│       └── Loader.jsx
 ├── context/             # React Context providers
+│   ├── AuthContext.jsx      # Authentication state
 │   ├── FinanceContext.jsx   # Finance data & operations
+│   ├── SettingsContext.jsx  # User preferences
 │   ├── SidebarContext.jsx   # Sidebar collapse state
 │   └── ToastContext.jsx     # Toast notifications
 ├── pages/               # Route pages
+│   ├── LoginPage.jsx
+│   ├── SignupPage.jsx
+│   ├── ForgotPasswordPage.jsx
 │   ├── TransactionsPage.jsx
 │   ├── AnalyticsPage.jsx
-│   └── SettingsPage.jsx     # (Hidden for V1)
+│   └── SettingsPage.jsx
 ├── services/
-│   └── indexedDB.js     # IndexedDB service layer
+│   └── supabase.js      # Supabase client & services
 ├── data/
-│   └── mockData.js      # Categories & initial data
+│   └── mockData.js      # Categories data
 ├── App.jsx              # Main app with routing
 └── main.jsx             # Entry point
 ```
@@ -111,16 +187,30 @@ src/
 - **Memoized Calculations** - Efficient re-renders with useMemo
 - **Optimized Context** - Minimal re-renders with useCallback
 
+## 🔄 What's New in v2.0
+
+- ✅ User authentication (signup, login, logout)
+- ✅ Password recovery via email
+- ✅ Cloud database with Supabase
+- ✅ Row Level Security for user data isolation
+- ✅ Settings page with profile management
+- ✅ Change password functionality
+- ✅ Multi-currency support (INR, USD, EUR, GBP)
+- ✅ Data export as JSON
+- ✅ Delete all data with confirmation
+- ✅ Reusable UI components (Button, Loader, ConfirmDialog)
+- ✅ Improved sidebar with user avatar and logout
+
 ## 🗺️ Roadmap
 
-### Version 2.0 (Planned)
-- [ ] Settings page with user preferences
-- [ ] Data export (CSV/PDF)
+### Version 3.0 (Planned)
+- [ ] Light/Dark theme toggle
+- [ ] Multi-language support (i18n)
+- [ ] Data export as CSV/PDF
 - [ ] Budget goals and alerts
 - [ ] Recurring transactions
-- [ ] Multiple currency support
-- [ ] User authentication
-- [ ] Cloud sync
+- [ ] Mobile responsive improvements
+- [ ] PWA support
 
 ## 📝 License
 
@@ -133,5 +223,5 @@ This project is open source and available under the [MIT License](LICENSE).
 ---
 
 <p align="center">
-  Made with ❤️ using React & Tailwind CSS
+  Made with ❤️ using React, Tailwind CSS & Supabase
 </p>

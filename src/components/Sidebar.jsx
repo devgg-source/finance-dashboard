@@ -1,15 +1,46 @@
-import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
+import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
 import { useSidebar } from '../context/SidebarContext';
+import { useAuth } from '../context/AuthContext';
+import { useToast } from '../context/ToastContext';
+import ConfirmDialog from './ui/ConfirmDialog';
 
 const navItems = [
   { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
   { path: '/transactions', icon: Receipt, label: 'Transactions' },
   { path: '/analytics', icon: PieChart, label: 'Analytics' },
+  { path: '/settings', icon: Settings, label: 'Settings' },
 ];
 
 const Sidebar = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
+  const { user, signOut } = useAuth();
+  const { addToast } = useToast();
+  const navigate = useNavigate();
+
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Get user display name and initials
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+  const initials = displayName.split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2);
+
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
+  };
+
+  const handleLogoutConfirm = async () => {
+    setIsLoggingOut(true);
+    try {
+      await signOut();
+      setShowLogoutDialog(false);
+      navigate('/login', { state: { loggedOut: true } });
+    } catch (error) {
+      addToast('Failed to logout', 'error');
+      setIsLoggingOut(false);
+    }
+  };
 
   return (
     <aside 
@@ -94,29 +125,55 @@ const Sidebar = () => {
         </ul>
       </nav>
 
-      {/* User Profile Section - Hidden for V1, enable after Settings implementation
+      {/* User Profile Section */}
       <div className="py-4 border-t border-white/[0.04]">
         <div className={`flex items-center ${isCollapsed ? 'justify-center' : 'gap-3'}`}>
-          <div className="relative flex-shrink-0">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-emerald-400 to-cyan-500 flex items-center justify-center text-white font-medium text-sm">
-              K
+          <div className="relative flex-shrink-0 group">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-medium text-sm">
+              {initials}
             </div>
             <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-emerald-400 rounded-full border-2 border-[#0d0d12]" />
+            {/* Logout tooltip for collapsed state */}
+            {isCollapsed && (
+              <button 
+                onClick={handleLogoutClick}
+                className="absolute left-full ml-2 px-2.5 py-1.5 bg-[#1e1e28] text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 whitespace-nowrap shadow-xl z-50 hover:bg-red-500/20 hover:text-red-400"
+              >
+                Logout
+              </button>
+            )}
           </div>
           {!isCollapsed && (
             <>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-white truncate">Karthik</p>
-                <p className="text-[11px] text-slate-500">Premium</p>
+                <p className="text-sm font-medium text-white truncate">{displayName}</p>
+                <p className="text-[11px] text-slate-500 truncate">{user?.email}</p>
               </div>
-              <button className="p-1.5 text-slate-500 hover:text-white rounded transition-colors">
+              <button 
+                onClick={handleLogoutClick}
+                className="p-1.5 text-slate-500 hover:text-red-400 rounded transition-colors"
+                title="Logout"
+              >
                 <LogOut className="w-4 h-4" />
               </button>
             </>
           )}
         </div>
       </div>
-      */}
+
+      {/* Logout Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        onConfirm={handleLogoutConfirm}
+        title="Logout"
+        message="Are you sure you want to logout? You will need to sign in again to access your account."
+        confirmLabel="Logout"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        isLoading={isLoggingOut}
+        icon={LogOut}
+      />
     </aside>
   );
 };

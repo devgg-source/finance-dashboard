@@ -1,21 +1,46 @@
 import { useState } from 'react';
 import { 
-  User, 
-  Bell, 
-  Shield, 
-  Palette, 
-  Globe, 
-  CreditCard,
+  // Bell, 
+  // Shield, 
+  // Globe, 
+  // CreditCard,
   Download,
   Trash2,
-  ChevronRight,
-  Moon,
-  Sun,
-  Check,
-  Camera
+  // ChevronRight,
+  // Moon,
+  // Sun,
+  // Check
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
+import { useFinance } from '../context/FinanceContext';
+import { useToast } from '../context/ToastContext';
+import EditProfileForm from '../components/settings/EditProfileForm';
+import ChangePasswordForm from '../components/settings/ChangePasswordForm';
+import AppearanceForm from '../components/settings/AppearanceForm';
+import ConfirmDialog from '../components/ui/ConfirmDialog';
+import Button from '../components/ui/Button';
 
 const SettingsPage = () => {
+  const { user } = useAuth();
+  const { transactions, clearAllData } = useFinance();
+  const toast = useToast();
+
+  // State
+  const [isDeletingData, setIsDeletingData] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+
+  // Get display name for export
+  const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
+
+  /* TODO: Implement these features in future versions
+  // Profile form state
+  const [profileForm, setProfileForm] = useState({
+    fullName: user?.user_metadata?.full_name || '',
+    email: user?.email || ''
+  });
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
+
   // Settings state
   const [settings, setSettings] = useState({
     theme: 'dark',
@@ -54,7 +79,69 @@ const SettingsPage = () => {
       }
     }));
   };
+  */
 
+  // Export transactions as JSON
+  const handleExportData = async () => {
+    if (transactions.length === 0) {
+      toast.warning('No data to export');
+      return;
+    }
+
+    setIsExporting(true);
+    try {
+      const data = {
+        exportedAt: new Date().toISOString(),
+        user: {
+          email: user?.email,
+          name: displayName
+        },
+        transactions: transactions.map(t => ({
+          type: t.type,
+          category: t.category,
+          description: t.description,
+          amount: t.amount,
+          date: t.date
+        }))
+      };
+
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `finance-data-${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success('Data exported successfully');
+    } catch (error) {
+      toast.error('Failed to export data');
+    } finally {
+      setIsExporting(false);
+    }
+  };
+
+  // Delete all user data
+  const handleDeleteClick = () => {
+    setShowDeleteDialog(true);
+  };
+
+  const handleDeleteConfirm = async () => {
+    setIsDeletingData(true);
+    try {
+      await clearAllData();
+      toast.success('All data deleted successfully');
+      setShowDeleteDialog(false);
+    } catch (error) {
+      toast.error('Failed to delete data');
+    } finally {
+      setIsDeletingData(false);
+    }
+  };
+
+  /* TODO: Implement Toggle components in future versions
   // Toggle Switch Component
   const ToggleSwitch = ({ enabled, onChange }) => (
     <button
@@ -86,6 +173,7 @@ const SettingsPage = () => {
       {action}
     </div>
   );
+  */
 
   return (
     <div className="space-y-6 max-w-4xl">
@@ -95,29 +183,25 @@ const SettingsPage = () => {
         <p className="text-slate-500 mt-1 text-sm">Manage your account and preferences</p>
       </div>
 
-      {/* Profile Section */}
+      {/* Profile Section - TODO: Implement profile update
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <h3 className="text-lg font-semibold text-white mb-6">Profile</h3>
         
         <div className="flex flex-col sm:flex-row sm:items-center gap-6">
-          {/* Avatar */}
           <div className="relative group">
             <div className="w-24 h-24 rounded-2xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
-              <span className="text-3xl font-bold text-white">JD</span>
+              <span className="text-3xl font-bold text-white">{initials}</span>
             </div>
-            <button className="absolute inset-0 rounded-2xl bg-black/50 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-              <Camera className="w-6 h-6 text-white" />
-            </button>
           </div>
 
-          {/* Profile Info */}
           <div className="flex-1 space-y-4">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">Full Name</label>
                 <input
                   type="text"
-                  defaultValue="John Doe"
+                  value={profileForm.fullName}
+                  onChange={(e) => setProfileForm(prev => ({ ...prev, fullName: e.target.value }))}
                   className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
                 />
               </div>
@@ -125,85 +209,39 @@ const SettingsPage = () => {
                 <label className="block text-xs font-medium text-slate-500 mb-1.5">Email</label>
                 <input
                   type="email"
-                  defaultValue="john@example.com"
-                  className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
+                  value={profileForm.email}
+                  disabled
+                  className="w-full px-4 py-2.5 bg-white/[0.02] border border-white/[0.04] rounded-xl text-slate-500 text-sm cursor-not-allowed"
                 />
               </div>
             </div>
+            <p className="text-xs text-slate-600">Email cannot be changed. Contact support for assistance.</p>
           </div>
         </div>
 
-        <div className="mt-6 pt-6 border-t border-white/[0.06] flex justify-end">
-          <button className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-medium rounded-xl transition-colors">
+        <div className="mt-6 pt-6 border-t border-white/[0.06] flex items-center justify-between">
+          <p className="text-xs text-slate-600">Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) : 'N/A'}</p>
+          <button 
+            disabled={isSavingProfile}
+            className="px-4 py-2 bg-indigo-500 hover:bg-indigo-600 disabled:bg-indigo-500/50 text-white text-sm font-medium rounded-xl transition-colors flex items-center gap-2"
+          >
+            {isSavingProfile && <Loader2 className="w-4 h-4 animate-spin" />}
             Save Changes
           </button>
         </div>
       </div>
+      */}
+
+      {/* Profile Section */}
+      <EditProfileForm />
+
+      {/* Change Password Section */}
+      <ChangePasswordForm />
 
       {/* Appearance Section */}
-      <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
-        <h3 className="text-lg font-semibold text-white mb-6">Appearance</h3>
-        
-        {/* Theme Selection */}
-        <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-400 mb-3">Theme</label>
-          <div className="grid grid-cols-3 gap-3">
-            {[
-              { id: 'light', label: 'Light', icon: Sun },
-              { id: 'dark', label: 'Dark', icon: Moon },
-              { id: 'system', label: 'System', icon: Globe }
-            ].map((theme) => (
-              <button
-                key={theme.id}
-                onClick={() => setSettings(prev => ({ ...prev, theme: theme.id }))}
-                className={`flex items-center justify-center gap-2 py-3 rounded-xl border transition-all ${
-                  settings.theme === theme.id
-                    ? 'border-indigo-500 bg-indigo-500/10 text-indigo-400'
-                    : 'border-white/[0.06] bg-white/[0.02] text-slate-400 hover:border-white/[0.1]'
-                }`}
-              >
-                <theme.icon className="w-4 h-4" />
-                <span className="text-sm font-medium">{theme.label}</span>
-                {settings.theme === theme.id && (
-                  <Check className="w-4 h-4 ml-1" />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
+      <AppearanceForm />
 
-        {/* Currency & Language */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Currency</label>
-            <select
-              value={settings.currency}
-              onChange={(e) => setSettings(prev => ({ ...prev, currency: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all cursor-pointer"
-            >
-              <option value="INR">Indian Rupee (₹)</option>
-              <option value="USD">US Dollar ($)</option>
-              <option value="EUR">Euro (€)</option>
-              <option value="GBP">British Pound (£)</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-slate-400 mb-2">Language</label>
-            <select
-              value={settings.language}
-              onChange={(e) => setSettings(prev => ({ ...prev, language: e.target.value }))}
-              className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all cursor-pointer"
-            >
-              <option value="en">English</option>
-              <option value="hi">Hindi</option>
-              <option value="es">Spanish</option>
-              <option value="fr">French</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      {/* Notifications Section */}
+      {/* TODO: Notifications Section - Implement notification system
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <h3 className="text-lg font-semibold text-white mb-2">Notifications</h3>
         <p className="text-slate-500 text-sm mb-6">Manage how you receive notifications</p>
@@ -256,8 +294,9 @@ const SettingsPage = () => {
           />
         </div>
       </div>
+      */}
 
-      {/* Privacy & Security Section */}
+      {/* TODO: Privacy & Security Section - Implement 2FA and connected accounts
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <h3 className="text-lg font-semibold text-white mb-2">Privacy & Security</h3>
         <p className="text-slate-500 text-sm mb-6">Protect your account and data</p>
@@ -299,6 +338,7 @@ const SettingsPage = () => {
           />
         </div>
       </div>
+      */}
 
       {/* Data Management Section */}
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
@@ -306,20 +346,41 @@ const SettingsPage = () => {
         <p className="text-slate-500 text-sm mb-6">Export or delete your data</p>
         
         <div className="flex flex-col sm:flex-row gap-3">
-          <button className="flex items-center justify-center gap-2 px-4 py-3 bg-white/[0.04] hover:bg-white/[0.08] border border-white/[0.06] rounded-xl text-white text-sm font-medium transition-colors">
-            <Download className="w-4 h-4" />
+          <Button 
+            onClick={handleExportData}
+            isLoading={isExporting}
+            variant="secondary"
+            icon={Download}
+          >
             Export All Data
-          </button>
-          <button className="flex items-center justify-center gap-2 px-4 py-3 bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/20 rounded-xl text-rose-400 text-sm font-medium transition-colors">
-            <Trash2 className="w-4 h-4" />
-            Delete Account
-          </button>
+          </Button>
+          <Button 
+            onClick={handleDeleteClick}
+            variant="danger"
+            icon={Trash2}
+          >
+            Delete All Data
+          </Button>
         </div>
       </div>
 
+      {/* Delete Data Confirmation Dialog */}
+      <ConfirmDialog
+        isOpen={showDeleteDialog}
+        onClose={() => setShowDeleteDialog(false)}
+        onConfirm={handleDeleteConfirm}
+        title="Delete All Data"
+        message="Are you sure you want to delete all your transaction data? This action cannot be undone and all your financial records will be permanently removed."
+        confirmLabel="Delete All"
+        cancelLabel="Cancel"
+        confirmVariant="danger"
+        isLoading={isDeletingData}
+        icon={Trash2}
+      />
+
       {/* Footer */}
       <div className="text-center py-4">
-        <p className="text-slate-600 text-sm">Finance Dashboard v1.0.0</p>
+        <p className="text-slate-600 text-sm">Finance Dashboard v2.0.0</p>
         <p className="text-slate-600 text-xs mt-1">Made with ❤️ for portfolio</p>
       </div>
     </div>
