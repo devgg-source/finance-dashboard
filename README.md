@@ -1,8 +1,8 @@
-# Finance Dashboard v2.0
+# Finance Dashboard v2.1
 
-A modern, elegant personal finance dashboard built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, user authentication, and cloud sync.
+A modern, elegant personal finance dashboard built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, AI-powered insights, user authentication, and cloud sync.
 
-![Finance Dashboard](https://img.shields.io/badge/version-2.0.0-blue.svg)
+![Finance Dashboard](https://img.shields.io/badge/version-2.1.0-blue.svg)
 ![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC.svg)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E.svg)
@@ -21,6 +21,14 @@ A modern, elegant personal finance dashboard built with React and Supabase. Trac
 - **Monthly Trends** - Track percentage changes compared to the previous month
 - **Interactive Charts** - Visualize your financial data with beautiful area and pie charts
 - **Recent Transactions** - Quick overview of your latest financial activity
+
+### 🤖 AI Insights (New in v2.1)
+- **Rule-Based AI Engine** - Smart financial analysis without external APIs
+- **Spending Trends** - Compare this month vs last month spending
+- **Savings Health** - Track savings rate with personalized recommendations
+- **Category Analysis** - Detect unusual spending patterns and anomalies
+- **Smart Tips** - Emergency fund tracking, consistency rewards
+- **Priority Alerts** - Critical, warning, positive, and tip notifications
 
 ### Transactions
 - **Full CRUD Operations** - Add, view, and delete transactions
@@ -64,7 +72,7 @@ A modern, elegant personal finance dashboard built with React and Supabase. Trac
 ```bash
 git clone https://github.com/devgg-source/finance-dashboard.git
 cd finance-dashboard
-git checkout finance-dashboard-v2
+git checkout finance-dashboard-v2.1
 ```
 
 2. Install dependencies
@@ -187,8 +195,18 @@ src/
 - **Memoized Calculations** - Efficient re-renders with useMemo
 - **Optimized Context** - Minimal re-renders with useCallback
 
-## 🔄 What's New in v2.0
+## 🔄 What's New in v2.1
 
+- ✅ **AI Insights Engine** - Rule-based smart financial analysis
+- ✅ Spending trend analysis (this month vs last)
+- ✅ Savings health calculator with recommendations
+- ✅ Category spending anomaly detection
+- ✅ Transaction pattern analysis
+- ✅ Personalized smart tips
+- ✅ Priority-based insight cards (critical, warning, positive, tip)
+- ✅ Enhanced toast notification system with queue management
+
+### Previous (v2.0)
 - ✅ User authentication (signup, login, logout)
 - ✅ Password recovery via email
 - ✅ Cloud database with Supabase
@@ -204,6 +222,7 @@ src/
 ## 🗺️ Roadmap
 
 ### Version 3.0 (Planned)
+- [ ] AI Chat Assistant (OpenAI/Gemini integration)
 - [ ] Light/Dark theme toggle
 - [ ] Multi-language support (i18n)
 - [ ] Data export as CSV/PDF
