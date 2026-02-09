@@ -1,8 +1,8 @@
-# Finance Dashboard v2.1
+# Finance Dashboard v2.1.1
 
 A modern, elegant personal finance dashboard built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, AI-powered insights, user authentication, and cloud sync.
 
-![Finance Dashboard](https://img.shields.io/badge/version-2.1.0-blue.svg)
+![Finance Dashboard](https://img.shields.io/badge/version-2.1.1-blue.svg)
 ![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC.svg)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E.svg)
@@ -195,8 +195,13 @@ src/
 - **Memoized Calculations** - Efficient re-renders with useMemo
 - **Optimized Context** - Minimal re-renders with useCallback
 
-## 🔄 What's New in v2.1
+## 🔄 What's New in v2.1.1
 
+- ✅ **Edit Transaction** - Edit existing transactions with pre-filled modal
+- ✅ **Floored Currency Values** - All amounts display as whole numbers
+- ✅ Improved UI with edit/delete action buttons on hover
+
+### Previous (v2.1.0)
 - ✅ **AI Insights Engine** - Rule-based smart financial analysis
 - ✅ Spending trend analysis (this month vs last)
 - ✅ Savings health calculator with recommendations
