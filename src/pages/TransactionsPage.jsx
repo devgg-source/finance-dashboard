@@ -1,11 +1,11 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2 } from 'lucide-react';
+import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2, Pencil } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
 import { v4 as uuidv4 } from 'uuid';
 
 const TransactionsPage = () => {
-  const { transactions, categories, addTransaction, deleteTransaction, getCategoryById, isLoading } = useFinance();
+  const { transactions, categories, addTransaction, updateTransaction, deleteTransaction, getCategoryById, isLoading } = useFinance();
   const toast = useToast();
   
   // State for filters
@@ -15,6 +15,7 @@ const TransactionsPage = () => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [deletingId, setDeletingId] = useState(null);
+  const [editingTransaction, setEditingTransaction] = useState(null);
 
   // Lock body scroll when modal is open
   useEffect(() => {
@@ -73,35 +74,64 @@ const TransactionsPage = () => {
     }
   };
 
-  // Handle form submission (async)
-  const handleAddTransaction = async (e) => {
+  // Handle form submission (async) - both add and edit
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!newTransaction.description || !newTransaction.amount || isSubmitting) return;
 
     setIsSubmitting(true);
     try {
-      await addTransaction({
-        id: uuidv4(),
-        ...newTransaction,
-        amount: parseFloat(newTransaction.amount)
-      });
+      if (editingTransaction) {
+        // Update existing transaction
+        await updateTransaction({
+          ...editingTransaction,
+          ...newTransaction,
+          amount: parseFloat(newTransaction.amount)
+        });
+        toast.success('Transaction updated', `${newTransaction.description} has been updated`);
+      } else {
+        // Add new transaction
+        await addTransaction({
+          id: uuidv4(),
+          ...newTransaction,
+          amount: parseFloat(newTransaction.amount)
+        });
+        toast.success('Transaction added', `${newTransaction.description} has been saved`);
+      }
 
-      toast.success('Transaction added', `${newTransaction.description} has been saved`);
-
-      // Reset form
-      setNewTransaction({
-        type: 'expense',
-        category: 'food',
-        description: '',
-        amount: '',
-        date: new Date().toISOString().split('T')[0]
-      });
-      setShowAddModal(false);
+      // Reset form and close modal
+      handleCloseModal();
     } catch (error) {
-      toast.error('Failed to add', 'Something went wrong. Please try again.');
+      toast.error(editingTransaction ? 'Failed to update' : 'Failed to add', 'Something went wrong. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  // Handle edit click
+  const handleEdit = (transaction) => {
+    setEditingTransaction(transaction);
+    setNewTransaction({
+      type: transaction.type,
+      category: transaction.category,
+      description: transaction.description,
+      amount: transaction.amount.toString(),
+      date: transaction.date
+    });
+    setShowAddModal(true);
+  };
+
+  // Handle modal close
+  const handleCloseModal = () => {
+    setShowAddModal(false);
+    setEditingTransaction(null);
+    setNewTransaction({
+      type: 'expense',
+      category: 'food',
+      description: '',
+      amount: '',
+      date: new Date().toISOString().split('T')[0]
+    });
   };
 
   // Handle delete (async)
@@ -285,11 +315,19 @@ const TransactionsPage = () => {
                 </div>
 
                 {/* Actions */}
-                <div className="col-span-1 flex items-center justify-end">
+                <div className="col-span-1 flex items-center justify-end gap-1">
+                  <button
+                    onClick={() => handleEdit(transaction)}
+                    className="p-2 rounded-lg text-slate-600 hover:text-indigo-400 hover:bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                    title="Edit transaction"
+                  >
+                    <Pencil className="w-4 h-4" />
+                  </button>
                   <button
                     onClick={() => handleDelete(transaction.id)}
                     disabled={deletingId === transaction.id}
                     className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
+                    title="Delete transaction"
                   >
                     {deletingId === transaction.id ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -323,16 +361,18 @@ const TransactionsPage = () => {
         </div>
       </div>
 
-      {/* Add Transaction Modal */}
+      {/* Add/Edit Transaction Modal */}
       {showAddModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAddModal(false)} />
+          <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={handleCloseModal} />
           <div className="relative w-full max-w-md bg-[#12121a] rounded-2xl border border-white/[0.06] p-6 shadow-2xl">
             {/* Modal Header */}
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-semibold text-white">Add Transaction</h2>
+              <h2 className="text-xl font-semibold text-white">
+                {editingTransaction ? 'Edit Transaction' : 'Add Transaction'}
+              </h2>
               <button
-                onClick={() => setShowAddModal(false)}
+                onClick={handleCloseModal}
                 className="p-2 rounded-lg text-slate-400 hover:text-white hover:bg-white/[0.04] transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -340,7 +380,7 @@ const TransactionsPage = () => {
             </div>
 
             {/* Form */}
-            <form onSubmit={handleAddTransaction} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Type Selection */}
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">Type</label>
@@ -438,10 +478,10 @@ const TransactionsPage = () => {
                 {isSubmitting ? (
                   <>
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    Adding...
+                    {editingTransaction ? 'Saving...' : 'Adding...'}
                   </>
                 ) : (
-                  'Add Transaction'
+                  editingTransaction ? 'Save Changes' : 'Add Transaction'
                 )}
               </button>
             </form>

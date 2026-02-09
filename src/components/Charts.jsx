@@ -13,7 +13,7 @@ const CustomTooltip = ({ active, payload, label }) => {
             <div key={index} className="flex items-center gap-2">
               <div className="w-2 h-2 rounded-full" style={{ backgroundColor: entry.color }} />
               <span className="text-slate-400 text-sm">{entry.name}:</span>
-              <span className="text-white text-sm font-medium">₹{entry.value.toLocaleString('en-IN')}</span>
+              <span className="text-white text-sm font-medium">₹{Math.floor(entry.value).toLocaleString('en-IN')}</span>
             </div>
           ))}
         </div>
@@ -152,7 +152,7 @@ export const ExpenseBreakdownChart = () => {
                   ))}
                 </Pie>
                 <Tooltip 
-                  formatter={(value) => `₹${value.toLocaleString('en-IN')}`}
+                  formatter={(value) => `₹${Math.floor(value).toLocaleString('en-IN')}`}
                   contentStyle={{ 
                     backgroundColor: '#1a1a24', 
                     border: '1px solid rgba(255,255,255,0.08)', 
@@ -173,7 +173,7 @@ export const ExpenseBreakdownChart = () => {
                 <div className="flex-1 min-w-0">
                   <p className="text-sm text-white truncate">{category.name}</p>
                   <p className="text-xs text-slate-500">
-                    {((category.value / total) * 100).toFixed(0)}% • ₹{category.value.toLocaleString('en-IN')}
+                    {Math.floor((category.value / total) * 100)}% • ₹{Math.floor(category.value).toLocaleString('en-IN')}
                   </p>
                 </div>
               </div>

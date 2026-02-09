@@ -72,10 +72,10 @@ const AnalyticsPage = () => {
     
     return {
       avgIncome: incomeTransactions.length 
-        ? incomeTransactions.reduce((sum, t) => sum + t.amount, 0) / incomeTransactions.length 
+        ? Math.floor(incomeTransactions.reduce((sum, t) => sum + t.amount, 0) / incomeTransactions.length)
         : 0,
       avgExpense: expenseTransactions.length 
-        ? expenseTransactions.reduce((sum, t) => sum + t.amount, 0) / expenseTransactions.length 
+        ? Math.floor(expenseTransactions.reduce((sum, t) => sum + t.amount, 0) / expenseTransactions.length)
         : 0,
       totalTransactions: transactions.length,
       incomeCount: incomeTransactions.length,
@@ -114,17 +114,17 @@ const AnalyticsPage = () => {
   const formatCompact = (value) => {
     if (value >= 100000) return `₹${(value / 100000).toFixed(1)}L`;
     if (value >= 1000) return `₹${(value / 1000).toFixed(1)}K`;
-    return `₹${value}`;
+    return `₹${Math.floor(value)}`;
   };
 
   // Savings rate
   const savingsRate = totals.income > 0 
-    ? ((totals.savings / totals.income) * 100).toFixed(1) 
+    ? Math.floor((totals.savings / totals.income) * 100)
     : 0;
 
   // Expense ratio
   const expenseRatio = totals.income > 0 
-    ? ((totals.expense / totals.income) * 100).toFixed(1) 
+    ? Math.floor((totals.expense / totals.income) * 100)
     : 0;
 
   // Custom tooltip for charts
@@ -321,7 +321,7 @@ const AnalyticsPage = () => {
           <div className="space-y-4">
             {topCategories.map((category, index) => {
               const percentage = totals.expense > 0 
-                ? ((category.value / totals.expense) * 100).toFixed(1) 
+                ? Math.floor((category.value / totals.expense) * 100)
                 : 0;
               const cat = categories.find(c => c.name === category.name);
               

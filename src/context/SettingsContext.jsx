@@ -70,8 +70,8 @@ export const SettingsProvider = ({ children }) => {
       style: 'currency',
       currency: config.currency,
       minimumFractionDigits: 0,
-      maximumFractionDigits: 2
-    }).format(amount);
+      maximumFractionDigits: 0
+    }).format(Math.floor(amount));
   }, [settings.currency]);
 
   const value = {

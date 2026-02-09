@@ -1,10 +1,10 @@
 import { useState } from 'react';
-import { Trash2, ArrowUpRight, ArrowDownRight, Wallet, Loader2 } from 'lucide-react';
+import { Trash2, Pencil, ArrowUpRight, ArrowDownRight, Wallet, Loader2 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
 
-const TransactionList = ({ limit }) => {
+const TransactionList = ({ limit, onEdit }) => {
   const { transactions, deleteTransaction, getCategoryById } = useFinance();
   const toast = useToast();
   const { formatCurrency } = useSettings();
@@ -89,18 +89,30 @@ const TransactionList = ({ limit }) => {
             </div>
             
             {/* Amount */}
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
               <div className="text-right">
                 <p className={`font-semibold text-sm ${typeConfig.color}`}>
                   {typeConfig.sign}{formatCurrency(transaction.amount)}
                 </p>
               </div>
               
+              {/* Edit button */}
+              {onEdit && (
+                <button
+                  onClick={() => onEdit(transaction)}
+                  className="p-2 rounded-lg text-slate-600 hover:text-indigo-400 hover:bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                  title="Edit transaction"
+                >
+                  <Pencil className="w-4 h-4" />
+                </button>
+              )}
+              
               {/* Delete button */}
               <button
                 onClick={() => handleDelete(transaction.id, transaction.description)}
                 disabled={deletingId === transaction.id}
                 className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200 disabled:opacity-50"
+                title="Delete transaction"
               >
                 {deletingId === transaction.id ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
