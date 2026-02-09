@@ -28,6 +28,7 @@ const Charts = lazy(() => import('./components/Charts').then(module => ({
     </>
   )
 })));
+const AIInsights = lazy(() => import('./components/AIInsights'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -121,6 +122,15 @@ const Dashboard = () => {
           <Charts />
         </Suspense>
       </div>
+
+      {/* AI Insights Section */}
+      <Suspense fallback={
+        <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06] h-[200px] flex items-center justify-center">
+          <Loader2 className="w-6 h-6 text-indigo-500 animate-spin" />
+        </div>
+      }>
+        <AIInsights />
+      </Suspense>
 
       {/* Recent Transactions */}
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
