@@ -1,8 +1,8 @@
-# Finance Dashboard v2.2
+# Xpensio v2.2
 
-A modern, elegant personal finance dashboard built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, AI-powered insights, user authentication, cloud sync, and multi-language support.
+A modern, elegant personal finance app built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, AI-powered insights, user authentication, cloud sync, and multi-language support.
 
-![Finance Dashboard](https://img.shields.io/badge/version-2.2-blue.svg)
+![Xpensio](https://img.shields.io/badge/version-2.2-blue.svg)
 ![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC.svg)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E.svg)
