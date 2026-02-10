@@ -31,8 +31,8 @@ export const generateInsights = (transactions) => {
       id: 'no-data',
       priority: PRIORITY.TIP,
       category: CATEGORY.BUDGET,
-      title: 'Get Started',
-      message: 'Add your first transaction to start receiving personalized financial insights!',
+      titleKey: 'getStarted',
+      messageKey: 'getStartedMessage',
       icon: 'sparkles'
     }];
   }
@@ -117,30 +117,33 @@ const analyzeSpendingTrends = (thisMonth, lastMonth) => {
       id: 'spending-spike',
       priority: PRIORITY.CRITICAL,
       category: CATEGORY.SPENDING,
-      title: 'Spending Alert',
-      message: `Your spending increased by ${Math.round(spendingChange)}% compared to last month. Review your expenses to stay on track.`,
+      titleKey: 'spendingAlert',
+      messageKey: 'spendingAlertMessage',
       icon: 'trending-up',
-      value: spendingChange
+      value: spendingChange,
+      params: { percent: Math.round(spendingChange) }
     });
   } else if (spendingChange > 15) {
     insights.push({
       id: 'spending-increase',
       priority: PRIORITY.WARNING,
       category: CATEGORY.SPENDING,
-      title: 'Spending Up',
-      message: `You're spending ${Math.round(spendingChange)}% more than last month. Keep an eye on discretionary expenses.`,
+      titleKey: 'spendingUp',
+      messageKey: 'spendingUpMessage',
       icon: 'alert-triangle',
-      value: spendingChange
+      value: spendingChange,
+      params: { percent: Math.round(spendingChange) }
     });
   } else if (spendingChange < -15) {
     insights.push({
       id: 'spending-decrease',
       priority: PRIORITY.POSITIVE,
       category: CATEGORY.SPENDING,
-      title: 'Great Savings!',
-      message: `Excellent! You've reduced spending by ${Math.abs(Math.round(spendingChange))}% compared to last month.`,
+      titleKey: 'greatSavings',
+      messageKey: 'greatSavingsMessage',
       icon: 'trending-down',
-      value: spendingChange
+      value: spendingChange,
+      params: { percent: Math.abs(Math.round(spendingChange)) }
     });
   }
 
@@ -152,20 +155,22 @@ const analyzeSpendingTrends = (thisMonth, lastMonth) => {
         id: 'income-increase',
         priority: PRIORITY.POSITIVE,
         category: CATEGORY.TREND,
-        title: 'Income Boost',
-        message: `Your income is up ${Math.round(incomeChange)}% from last month. Consider allocating extra to savings!`,
+        titleKey: 'incomeBoost',
+        messageKey: 'incomeBoostMessage',
         icon: 'dollar-sign',
-        value: incomeChange
+        value: incomeChange,
+        params: { percent: Math.round(incomeChange) }
       });
     } else if (incomeChange < -20) {
       insights.push({
         id: 'income-decrease',
         priority: PRIORITY.WARNING,
         category: CATEGORY.TREND,
-        title: 'Income Drop',
-        message: `Your income decreased by ${Math.abs(Math.round(incomeChange))}%. Consider reviewing your budget.`,
+        titleKey: 'incomeDrop',
+        messageKey: 'incomeDropMessage',
         icon: 'alert-circle',
-        value: incomeChange
+        value: incomeChange,
+        params: { percent: Math.abs(Math.round(incomeChange)) }
       });
     }
   }
@@ -191,48 +196,52 @@ const analyzeSavingsHealth = (thisMonth) => {
       id: 'excellent-savings',
       priority: PRIORITY.POSITIVE,
       category: CATEGORY.SAVINGS,
-      title: 'Savings Champion!',
-      message: `Amazing! You're saving ${Math.round(savingsRate)}% of your income. Keep up the great work!`,
+      titleKey: 'savingsChampion',
+      messageKey: 'savingsChampionMessage',
       icon: 'trophy',
-      value: savingsRate
+      value: savingsRate,
+      params: { percent: Math.round(savingsRate) }
     });
   } else if (savingsRate >= 20) {
     insights.push({
       id: 'good-savings',
       priority: PRIORITY.POSITIVE,
       category: CATEGORY.SAVINGS,
-      title: 'Healthy Savings',
-      message: `Good job! Your ${Math.round(savingsRate)}% savings rate is above the recommended 20%.`,
+      titleKey: 'goodSavings',
+      messageKey: 'goodSavingsMessage',
       icon: 'check-circle',
-      value: savingsRate
+      value: savingsRate,
+      params: { percent: Math.round(savingsRate) }
     });
   } else if (savingsRate >= 10) {
     insights.push({
       id: 'moderate-savings',
       priority: PRIORITY.TIP,
       category: CATEGORY.SAVINGS,
-      title: 'Room to Grow',
-      message: `You're saving ${Math.round(savingsRate)}% of income. Try to reach the 20% benchmark for financial security.`,
+      titleKey: 'lowSavings',
+      messageKey: 'lowSavingsMessage',
       icon: 'target',
-      value: savingsRate
+      value: savingsRate,
+      params: { percent: Math.round(savingsRate) }
     });
   } else if (savingsRate > 0) {
     insights.push({
       id: 'low-savings',
       priority: PRIORITY.WARNING,
       category: CATEGORY.SAVINGS,
-      title: 'Low Savings Rate',
-      message: `Your savings rate is only ${Math.round(savingsRate)}%. Consider cutting expenses to save more.`,
+      titleKey: 'lowSavings',
+      messageKey: 'lowSavingsMessage',
       icon: 'alert-triangle',
-      value: savingsRate
+      value: savingsRate,
+      params: { percent: Math.round(savingsRate) }
     });
   } else {
     insights.push({
       id: 'no-savings',
       priority: PRIORITY.CRITICAL,
       category: CATEGORY.SAVINGS,
-      title: 'No Savings This Month',
-      message: 'You haven\'t saved anything this month. Even small amounts add up over time!',
+      titleKey: 'noSavings',
+      messageKey: 'noSavingsMessage',
       icon: 'alert-circle',
       value: 0
     });
@@ -244,10 +253,11 @@ const analyzeSavingsHealth = (thisMonth) => {
       id: 'high-expense-ratio',
       priority: PRIORITY.CRITICAL,
       category: CATEGORY.BUDGET,
-      title: 'Budget Warning',
-      message: `You're spending ${Math.round(expenseRate)}% of your income. This leaves little room for savings or emergencies.`,
+      titleKey: 'overspending',
+      messageKey: 'overspendingMessage',
       icon: 'alert-octagon',
-      value: expenseRate
+      value: expenseRate,
+      params: { percent: Math.round(expenseRate) }
     });
   }
 
@@ -282,10 +292,11 @@ const analyzeCategorySpending = (thisMonth, allTransactions) => {
       id: 'high-category-spending',
       priority: PRIORITY.WARNING,
       category: CATEGORY.CATEGORY_ANALYSIS,
-      title: 'Category Focus',
-      message: `${topCategory} makes up ${Math.round(topCategoryPercent)}% of your expenses. Consider if this aligns with your priorities.`,
+      titleKey: 'topCategory',
+      messageKey: 'topCategoryMessage',
       icon: 'pie-chart',
       value: topCategoryPercent,
+      params: { category: topCategory, percent: Math.round(topCategoryPercent) },
       metadata: { category: topCategory }
     });
   }
@@ -301,10 +312,11 @@ const analyzeCategorySpending = (thisMonth, allTransactions) => {
         id: 'category-spike',
         priority: PRIORITY.WARNING,
         category: CATEGORY.CATEGORY_ANALYSIS,
-        title: 'Unusual Spending',
-        message: `${topCategory} spending is ${Math.round((topAmount / historicalAvg - 1) * 100)}% higher than your average.`,
+        titleKey: 'highSpendingCategory',
+        messageKey: 'highSpendingCategoryMessage',
         icon: 'zap',
         value: topAmount,
+        params: { category: topCategory, percent: Math.round((topAmount / historicalAvg - 1) * 100) },
         metadata: { category: topCategory, average: historicalAvg }
       });
     }
@@ -334,8 +346,8 @@ const analyzeTransactionPatterns = (transactions) => {
       id: 'low-tracking',
       priority: PRIORITY.TIP,
       category: CATEGORY.BUDGET,
-      title: 'Track More',
-      message: 'You have few transactions recorded this month. Regular tracking helps identify spending patterns.',
+      titleKey: 'budgetTip',
+      messageKey: 'budgetTipMessage',
       icon: 'edit-3',
       value: thisMonthTxns.length
     });
@@ -358,8 +370,8 @@ const analyzeTransactionPatterns = (transactions) => {
         id: 'large-expense',
         priority: PRIORITY.TIP,
         category: CATEGORY.SPENDING,
-        title: 'Large Expense Noted',
-        message: `You had a significant expense of ₹${parseFloat(largest.amount).toLocaleString()} on ${largest.category}. Was this planned?`,
+        titleKey: 'reviewSubscriptions',
+        messageKey: 'reviewSubscriptionsMessage',
         icon: 'credit-card',
         value: parseFloat(largest.amount),
         metadata: { transaction: largest }
@@ -392,20 +404,22 @@ const generateSmartTips = (thisMonth, lastMonth, allTransactions) => {
         id: 'emergency-fund',
         priority: PRIORITY.TIP,
         category: CATEGORY.SAVINGS,
-        title: 'Build Emergency Fund',
-        message: `Your savings cover ${monthsCovered.toFixed(1)} months of expenses. Aim for 3-6 months for security.`,
+        titleKey: 'emergencyFund',
+        messageKey: 'emergencyFundMessage',
         icon: 'shield',
-        value: monthsCovered
+        value: monthsCovered,
+        params: { months: monthsCovered.toFixed(1) }
       });
     } else if (monthsCovered >= 6) {
       insights.push({
         id: 'strong-emergency-fund',
         priority: PRIORITY.POSITIVE,
         category: CATEGORY.SAVINGS,
-        title: 'Strong Safety Net',
-        message: `Great! Your savings cover ${monthsCovered.toFixed(1)} months of expenses. Consider investing the surplus.`,
+        titleKey: 'consistentSaver',
+        messageKey: 'consistentSaverMessage',
         icon: 'shield-check',
-        value: monthsCovered
+        value: monthsCovered,
+        params: { months: monthsCovered.toFixed(1) }
       });
     }
   }
@@ -420,10 +434,11 @@ const generateSmartTips = (thisMonth, lastMonth, allTransactions) => {
       id: 'consistent-tracking',
       priority: PRIORITY.POSITIVE,
       category: CATEGORY.BUDGET,
-      title: 'Consistent Tracker',
-      message: `You've logged transactions on ${daysWithTransactions} different days this month. Consistency is key!`,
+      titleKey: 'consistentSaver',
+      messageKey: 'consistentSaverMessage',
       icon: 'calendar-check',
-      value: daysWithTransactions
+      value: daysWithTransactions,
+      params: { months: daysWithTransactions }
     });
   }
 

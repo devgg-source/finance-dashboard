@@ -2,12 +2,14 @@ import { useState, useEffect } from 'react';
 import { User, Mail, Loader2, Check } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { useToast } from '../../context/ToastContext';
+import { useTranslation } from '../../context/LanguageContext';
 import { authService } from '../../services/supabase';
 import Button from '../ui/Button';
 
 const EditProfileForm = () => {
   const { user, refreshUser } = useAuth();
   const toast = useToast();
+  const { t } = useTranslation();
 
   // Form state
   const [displayName, setDisplayName] = useState('');
@@ -42,24 +44,24 @@ const EditProfileForm = () => {
     e.preventDefault();
 
     if (!hasChanges) {
-      toast.info('No changes to save');
+      toast.info(t('settings.noChanges'));
       return;
     }
 
     // Validation
     if (!displayName.trim()) {
-      toast.error('Display name is required');
+      toast.error(t('settings.nameRequired'));
       return;
     }
 
     if (!email.trim()) {
-      toast.error('Email is required');
+      toast.error(t('settings.emailRequired'));
       return;
     }
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
-      toast.error('Please enter a valid email');
+      toast.error(t('settings.invalidEmail'));
       return;
     }
 
@@ -77,9 +79,9 @@ const EditProfileForm = () => {
       // Update email if changed (requires confirmation)
       if (emailChanged) {
         await authService.updateEmail(email.trim());
-        toast.success('Confirmation email sent to your new address. Please verify to complete the change.');
+        toast.success(t('settings.emailConfirmSent'));
       } else if (nameChanged) {
-        toast.success('Profile updated successfully');
+        toast.success(t('settings.profileUpdated'));
       }
 
       // Refresh user data
@@ -88,7 +90,7 @@ const EditProfileForm = () => {
       }
     } catch (error) {
       console.error('Profile update error:', error);
-      toast.error(error.message || 'Failed to update profile');
+      toast.error(error.message || t('settings.profileUpdateFailed'));
     } finally {
       setIsSubmitting(false);
     }
@@ -96,7 +98,7 @@ const EditProfileForm = () => {
 
   return (
     <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
-      <h3 className="text-lg font-semibold text-white mb-6">Profile</h3>
+      <h3 className="text-lg font-semibold text-white mb-6">{t('settings.profile')}</h3>
       
       <form onSubmit={handleSubmit}>
         <div className="flex flex-col sm:flex-row gap-6">
@@ -114,7 +116,7 @@ const EditProfileForm = () => {
             {/* Display Name */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">
-                Display Name
+                {t('settings.displayName')}
               </label>
               <div className="relative">
                 <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -122,7 +124,7 @@ const EditProfileForm = () => {
                   type="text"
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your name"
+                  placeholder={t('settings.yourName')}
                   className="w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all placeholder:text-slate-600"
                 />
               </div>
@@ -131,7 +133,7 @@ const EditProfileForm = () => {
             {/* Email */}
             <div>
               <label className="block text-xs font-medium text-slate-500 mb-1.5">
-                Email Address
+                {t('settings.email')}
               </label>
               <div className="relative">
                 <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
@@ -144,7 +146,7 @@ const EditProfileForm = () => {
                 />
               </div>
               <p className="text-xs text-slate-600 mt-1.5">
-                Changing email requires verification via the new address
+                {t('settings.emailChangeNote')}
               </p>
             </div>
           </div>
@@ -153,7 +155,7 @@ const EditProfileForm = () => {
         {/* Footer */}
         <div className="mt-6 pt-6 border-t border-white/[0.06] flex items-center justify-between">
           <p className="text-xs text-slate-600">
-            Member since {user?.created_at 
+            {t('settings.memberSince')} {user?.created_at 
               ? new Date(user.created_at).toLocaleDateString('en-US', { month: 'long', year: 'numeric' }) 
               : 'N/A'}
           </p>
@@ -164,7 +166,7 @@ const EditProfileForm = () => {
             disabled={!hasChanges || isSubmitting}
             icon={hasChanges ? Check : null}
           >
-            {isSubmitting ? 'Saving...' : 'Save Changes'}
+            {isSubmitting ? t('common.saving') : t('common.saveChanges')}
           </Button>
         </div>
       </form>

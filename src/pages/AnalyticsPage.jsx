@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { useFinance } from '../context/FinanceContext';
+import { useTranslation } from '../context/LanguageContext';
 import { 
   TrendingUp, 
   TrendingDown, 
@@ -29,6 +30,12 @@ import {
 
 const AnalyticsPage = () => {
   const { transactions, totals, balance, expensesByCategory, monthlyData, categories, isLoading } = useFinance();
+  const { t } = useTranslation();
+
+  // Helper to get translated category name
+  const getCategoryName = (categoryId) => {
+    return t(`categories.${categoryId}`) || categoryId;
+  };
 
   // Calculate monthly trends
   const monthlyTrends = useMemo(() => {
@@ -105,7 +112,7 @@ const AnalyticsPage = () => {
       <div className="flex items-center justify-center min-h-[400px]">
         <div className="text-center">
           <Loader2 className="w-8 h-8 text-indigo-500 animate-spin mx-auto mb-4" />
-          <p className="text-slate-400 text-sm">Loading analytics...</p>
+          <p className="text-slate-400 text-sm">{t('common.loading')}...</p>
         </div>
       </div>
     );
@@ -148,8 +155,8 @@ const AnalyticsPage = () => {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Analytics</h1>
-        <p className="text-slate-500 mt-1 text-sm">Deep insights into your financial health</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">{t('analytics.title')}</h1>
+        <p className="text-slate-500 mt-1 text-sm">{t('analytics.subtitle')}</p>
       </div>
 
       {/* Key Metrics */}
@@ -164,7 +171,7 @@ const AnalyticsPage = () => {
               +2.5%
             </span>
           </div>
-          <p className="text-slate-500 text-sm">Savings Rate</p>
+          <p className="text-slate-500 text-sm">{t('analytics.savingsRate')}</p>
           <p className="text-2xl font-bold text-white mt-1">{savingsRate}%</p>
         </div>
 
@@ -178,7 +185,7 @@ const AnalyticsPage = () => {
               -3.2%
             </span>
           </div>
-          <p className="text-slate-500 text-sm">Expense Ratio</p>
+          <p className="text-slate-500 text-sm">{t('analytics.expenseRatio')}</p>
           <p className="text-2xl font-bold text-white mt-1">{expenseRatio}%</p>
         </div>
 
@@ -189,7 +196,7 @@ const AnalyticsPage = () => {
               <ArrowUpRight className="w-5 h-5 text-indigo-400" />
             </div>
           </div>
-          <p className="text-slate-500 text-sm">Avg Income</p>
+          <p className="text-slate-500 text-sm">{t('analytics.avgIncome')}</p>
           <p className="text-2xl font-bold text-white mt-1">{formatCompact(averages.avgIncome)}</p>
         </div>
 
@@ -200,7 +207,7 @@ const AnalyticsPage = () => {
               <ArrowDownRight className="w-5 h-5 text-orange-400" />
             </div>
           </div>
-          <p className="text-slate-500 text-sm">Avg Expense</p>
+          <p className="text-slate-500 text-sm">{t('analytics.avgExpense')}</p>
           <p className="text-2xl font-bold text-white mt-1">{formatCompact(averages.avgExpense)}</p>
         </div>
       </div>
@@ -210,13 +217,13 @@ const AnalyticsPage = () => {
         {/* Income vs Expenses Trend */}
         <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-white">Income vs Expenses</h3>
-            <p className="text-slate-500 text-sm mt-0.5">6-month trend overview</p>
+            <h3 className="text-lg font-semibold text-white">{t('analytics.incomeVsExpenses')}</h3>
+            <p className="text-slate-500 text-sm mt-0.5">{t('analytics.monthTrend')}</p>
           </div>
           <div className="h-64">
             {!monthlyData.some(m => m.income > 0 || m.expense > 0) ? (
               <div className="h-full flex items-center justify-center">
-                <p className="text-slate-500 text-sm">No transaction data yet. Add some transactions to see the trend.</p>
+                <p className="text-slate-500 text-sm">{t('analytics.noDataYet')}</p>
               </div>
             ) : (
             <ResponsiveContainer width="100%" height="100%">
@@ -238,7 +245,7 @@ const AnalyticsPage = () => {
                 <Area 
                   type="monotone" 
                   dataKey="income" 
-                  name="Income"
+                  name={t('common.income')}
                   stroke="#22c55e" 
                   strokeWidth={2}
                   fill="url(#incomeGradient)" 
@@ -246,7 +253,7 @@ const AnalyticsPage = () => {
                 <Area 
                   type="monotone" 
                   dataKey="expense" 
-                  name="Expense"
+                  name={t('common.expense')}
                   stroke="#f43f5e" 
                   strokeWidth={2}
                   fill="url(#expenseGradient)" 
@@ -260,8 +267,8 @@ const AnalyticsPage = () => {
         {/* Spending by Day */}
         <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-white">Spending by Day</h3>
-            <p className="text-slate-500 text-sm mt-0.5">Your weekly spending pattern</p>
+            <h3 className="text-lg font-semibold text-white">{t('analytics.spendingByDay')}</h3>
+            <p className="text-slate-500 text-sm mt-0.5">{t('analytics.weeklyPattern')}</p>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -272,7 +279,7 @@ const AnalyticsPage = () => {
                 <Tooltip content={<CustomTooltip />} />
                 <Bar 
                   dataKey="amount" 
-                  name="Spending"
+                  name={t('charts.spending')}
                   fill="#818cf8" 
                   radius={[6, 6, 0, 0]}
                 />
@@ -287,8 +294,8 @@ const AnalyticsPage = () => {
         {/* Category Breakdown */}
         <div className="lg:col-span-1 bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-white">Expense Breakdown</h3>
-            <p className="text-slate-500 text-sm mt-0.5">By category</p>
+            <h3 className="text-lg font-semibold text-white">{t('analytics.expenseBreakdown')}</h3>
+            <p className="text-slate-500 text-sm mt-0.5">{t('analytics.byCategory')}</p>
           </div>
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
@@ -315,15 +322,15 @@ const AnalyticsPage = () => {
         {/* Top Spending Categories */}
         <div className="lg:col-span-2 bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-white">Top Spending Categories</h3>
-            <p className="text-slate-500 text-sm mt-0.5">Where your money goes</p>
+            <h3 className="text-lg font-semibold text-white">{t('analytics.topCategories')}</h3>
+            <p className="text-slate-500 text-sm mt-0.5">{t('analytics.whereMoneyGoes')}</p>
           </div>
           <div className="space-y-4">
             {topCategories.map((category, index) => {
               const percentage = totals.expense > 0 
                 ? Math.floor((category.value / totals.expense) * 100)
                 : 0;
-              const cat = categories.find(c => c.name === category.name);
+              const cat = categories.find(c => c.id === category.id);
               
               return (
                 <div key={index} className="flex items-center gap-4">
@@ -335,7 +342,7 @@ const AnalyticsPage = () => {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-medium text-white truncate">{category.name}</span>
+                      <span className="text-sm font-medium text-white truncate">{getCategoryName(category.id)}</span>
                       <span className="text-sm font-medium text-white">{formatAmount(category.value)}</span>
                     </div>
                     <div className="flex items-center gap-2">
@@ -361,14 +368,14 @@ const AnalyticsPage = () => {
       {/* Financial Health Summary */}
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-white">Financial Health Summary</h3>
-          <p className="text-slate-500 text-sm mt-0.5">Your overall financial snapshot</p>
+          <h3 className="text-lg font-semibold text-white">{t('analytics.healthSummary')}</h3>
+          <p className="text-slate-500 text-sm mt-0.5">{t('analytics.financialSnapshot')}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-slate-400 text-sm">
               <Wallet className="w-4 h-4" />
-              Current Balance
+              {t('analytics.currentBalance')}
             </div>
             <p className={`text-2xl font-bold ${balance >= 0 ? 'text-emerald-400' : 'text-rose-400'}`}>
               {formatAmount(balance)}
@@ -377,21 +384,21 @@ const AnalyticsPage = () => {
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-slate-400 text-sm">
               <TrendingUp className="w-4 h-4" />
-              Total Income
+              {t('dashboard.totalIncome')}
             </div>
             <p className="text-2xl font-bold text-emerald-400">{formatAmount(totals.income)}</p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-slate-400 text-sm">
               <TrendingDown className="w-4 h-4" />
-              Total Expenses
+              {t('dashboard.totalExpenses')}
             </div>
             <p className="text-2xl font-bold text-rose-400">{formatAmount(totals.expense)}</p>
           </div>
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-slate-400 text-sm">
               <PiggyBank className="w-4 h-4" />
-              Total Savings
+              {t('dashboard.totalSavings')}
             </div>
             <p className="text-2xl font-bold text-indigo-400">{formatAmount(totals.savings)}</p>
           </div>

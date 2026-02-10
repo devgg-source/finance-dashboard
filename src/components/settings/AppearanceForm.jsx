@@ -1,20 +1,15 @@
 import { useSettings } from '../../context/SettingsContext';
+import { useLanguage, supportedLanguages } from '../../context/LanguageContext';
 
 const AppearanceForm = () => {
-  const { currency, language, updateSetting } = useSettings();
+  const { currency, updateSetting } = useSettings();
+  const { language, setLanguage } = useLanguage();
 
   const currencies = [
     { value: 'INR', label: 'Indian Rupee (₹)' },
     { value: 'USD', label: 'US Dollar ($)' },
     { value: 'EUR', label: 'Euro (€)' },
     { value: 'GBP', label: 'British Pound (£)' }
-  ];
-
-  const languages = [
-    { value: 'en', label: 'English' },
-    { value: 'hi', label: 'Hindi' },
-    { value: 'es', label: 'Spanish' },
-    { value: 'fr', label: 'French' }
   ];
 
   return (
@@ -44,17 +39,17 @@ const AppearanceForm = () => {
           <label className="block text-sm font-medium text-slate-400 mb-2">Language</label>
           <select
             value={language}
-            onChange={(e) => updateSetting('language', e.target.value)}
+            onChange={(e) => setLanguage(e.target.value)}
             className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all cursor-pointer"
           >
-            {languages.map((lang) => (
-              <option key={lang.value} value={lang.value}>
-                {lang.label}
+            {supportedLanguages.map((lang) => (
+              <option key={lang.code} value={lang.code}>
+                {lang.nativeName}
               </option>
             ))}
           </select>
           <p className="text-xs text-slate-500 mt-1.5">
-            Language support coming soon
+            App interface language
           </p>
         </div>
       </div>

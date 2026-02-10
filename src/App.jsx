@@ -5,6 +5,7 @@ import { SidebarProvider, useSidebar } from './context/SidebarContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { ToastProvider } from './context/ToastContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { LanguageProvider, useTranslation } from './context/LanguageContext';
 import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
@@ -63,6 +64,7 @@ const PublicRoute = ({ children }) => {
 // Dashboard Page Component
 const Dashboard = () => {
   const { totals, balance, monthlyTrends, isLoading } = useFinance();
+  const { t } = useTranslation();
 
   if (isLoading) {
     return <Loader />;
@@ -72,14 +74,14 @@ const Dashboard = () => {
     <div className="space-y-6">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-white tracking-tight">Dashboard</h1>
-        <p className="text-slate-500 mt-1 text-sm">Welcome back! Here's your financial overview.</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">{t('dashboard.title')}</h1>
+        <p className="text-slate-500 mt-1 text-sm">{t('dashboard.welcome')}</p>
       </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4">
         <StatCard
-          title="Total Balance"
+          title={t('dashboard.totalBalance')}
           amount={balance}
           icon={Wallet}
           trend={monthlyTrends.balance.direction}
@@ -87,7 +89,7 @@ const Dashboard = () => {
           color="primary"
         />
         <StatCard
-          title="Total Income"
+          title={t('dashboard.totalIncome')}
           amount={totals.income}
           icon={TrendingUp}
           trend={monthlyTrends.income.direction}
@@ -95,7 +97,7 @@ const Dashboard = () => {
           color="green"
         />
         <StatCard
-          title="Total Expenses"
+          title={t('dashboard.totalExpenses')}
           amount={totals.expense}
           icon={TrendingDown}
           trend={monthlyTrends.expense.direction}
@@ -103,7 +105,7 @@ const Dashboard = () => {
           color="red"
         />
         <StatCard
-          title="Total Savings"
+          title={t('dashboard.totalSavings')}
           amount={totals.savings}
           icon={PiggyBank}
           trend={monthlyTrends.savings.direction}
@@ -136,11 +138,11 @@ const Dashboard = () => {
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h3 className="text-lg font-semibold text-white">Recent Transactions</h3>
-            <p className="text-slate-500 text-sm mt-0.5">Your latest financial activity</p>
+            <h3 className="text-lg font-semibold text-white">{t('dashboard.recentTransactions')}</h3>
+            <p className="text-slate-500 text-sm mt-0.5">{t('dashboard.latestActivity')}</p>
           </div>
           <Link to="/transactions" className="text-sm font-medium text-indigo-400 hover:text-indigo-300 transition-colors">
-            View All →
+            {t('common.viewAll')} →
           </Link>
         </div>
         <TransactionList limit={5} />
@@ -179,45 +181,47 @@ const AppLayout = () => {
 // Main App Component
 function App() {
   return (
-    <SettingsProvider>
-      <ToastProvider>
-        <AuthProvider>
-          <Router>
-            <Suspense fallback={<Loader fullscreen />}>
-              <Routes>
-                {/* Public Routes */}
-                <Route path="/login" element={
-                  <PublicRoute>
-                    <LoginPage />
-                  </PublicRoute>
-                } />
-                <Route path="/signup" element={
-                  <PublicRoute>
-                    <SignupPage />
-                  </PublicRoute>
-                } />
-                <Route path="/forgot-password" element={
-                  <PublicRoute>
-                    <ForgotPasswordPage />
-                  </PublicRoute>
-                } />
+    <LanguageProvider>
+      <SettingsProvider>
+        <ToastProvider>
+          <AuthProvider>
+            <Router>
+              <Suspense fallback={<Loader fullscreen />}>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route path="/login" element={
+                    <PublicRoute>
+                      <LoginPage />
+                    </PublicRoute>
+                  } />
+                  <Route path="/signup" element={
+                    <PublicRoute>
+                      <SignupPage />
+                    </PublicRoute>
+                  } />
+                  <Route path="/forgot-password" element={
+                    <PublicRoute>
+                      <ForgotPasswordPage />
+                    </PublicRoute>
+                  } />
 
-                {/* Protected Routes */}
-                <Route path="/*" element={
-                  <ProtectedRoute>
-                    <FinanceProvider>
-                      <SidebarProvider>
-                        <AppLayout />
-                      </SidebarProvider>
-                    </FinanceProvider>
-                  </ProtectedRoute>
-                } />
-              </Routes>
-            </Suspense>
-          </Router>
-        </AuthProvider>
-      </ToastProvider>
-    </SettingsProvider>
+                  {/* Protected Routes */}
+                  <Route path="/*" element={
+                    <ProtectedRoute>
+                      <FinanceProvider>
+                        <SidebarProvider>
+                          <AppLayout />
+                        </SidebarProvider>
+                      </FinanceProvider>
+                    </ProtectedRoute>
+                  } />
+                </Routes>
+              </Suspense>
+            </Router>
+          </AuthProvider>
+        </ToastProvider>
+      </SettingsProvider>
+    </LanguageProvider>
   );
 }
 

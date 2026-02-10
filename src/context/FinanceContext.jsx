@@ -178,6 +178,7 @@ export const FinanceProvider = ({ children }) => {
       const category = getCategoryById(t.category);
       if (!acc[t.category]) {
         acc[t.category] = {
+          id: t.category,
           name: category?.name || t.category,
           value: 0,
           color: category?.color || '#6b7280'
