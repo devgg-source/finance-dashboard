@@ -1,11 +1,13 @@
 import { useState } from 'react';
 import { Lock, Eye, EyeOff } from 'lucide-react';
 import { useToast } from '../../context/ToastContext';
+import { useTranslation } from '../../context/LanguageContext';
 import { authService } from '../../services/supabase';
 import Button from '../ui/Button';
 
 const ChangePasswordForm = () => {
   const toast = useToast();
+  const { t } = useTranslation();
 
   const [formData, setFormData] = useState({
     currentPassword: '',
@@ -26,21 +28,21 @@ const ChangePasswordForm = () => {
     const newErrors = {};
     
     if (!formData.currentPassword) {
-      newErrors.currentPassword = 'Current password is required';
+      newErrors.currentPassword = t('settings.currentPasswordRequired');
     }
     
     if (!formData.newPassword) {
-      newErrors.newPassword = 'New password is required';
+      newErrors.newPassword = t('settings.newPasswordRequired');
     } else if (formData.newPassword.length < 6) {
-      newErrors.newPassword = 'Password must be at least 6 characters';
+      newErrors.newPassword = t('settings.passwordMinLength');
     } else if (formData.newPassword === formData.currentPassword) {
-      newErrors.newPassword = 'New password must be different from current';
+      newErrors.newPassword = t('settings.passwordMustDiffer');
     }
     
     if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Please confirm your new password';
+      newErrors.confirmPassword = t('settings.confirmPasswordRequired');
     } else if (formData.newPassword !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Passwords do not match';
+      newErrors.confirmPassword = t('settings.passwordsNoMatch');
     }
     
     setErrors(newErrors);
@@ -55,11 +57,11 @@ const ChangePasswordForm = () => {
     setIsLoading(true);
     try {
       await authService.updatePassword(formData.newPassword);
-      toast.success('Password changed successfully');
+      toast.success(t('settings.passwordUpdated'));
       setFormData({ currentPassword: '', newPassword: '', confirmPassword: '' });
       setErrors({});
     } catch (error) {
-      toast.error('Failed to change password', error.message);
+      toast.error(t('settings.passwordFailed'), error.message);
     } finally {
       setIsLoading(false);
     }
@@ -109,26 +111,26 @@ const ChangePasswordForm = () => {
 
   return (
     <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
-      <h3 className="text-lg font-semibold text-white mb-2">Change Password</h3>
-      <p className="text-slate-500 text-sm mb-6">Update your password to keep your account secure</p>
+      <h3 className="text-lg font-semibold text-white mb-2">{t('settings.changePassword')}</h3>
+      <p className="text-slate-500 text-sm mb-6">{t('settings.securityDesc')}</p>
       
       <form onSubmit={handleSubmit} className="space-y-4 max-w-md">
         <PasswordInput 
           field="currentPassword" 
-          label="Current Password" 
-          placeholder="Enter current password" 
+          label={t('settings.currentPassword')} 
+          placeholder={t('settings.enterCurrentPassword')} 
         />
         
         <PasswordInput 
           field="newPassword" 
-          label="New Password" 
-          placeholder="Enter new password" 
+          label={t('settings.newPassword')} 
+          placeholder={t('settings.enterNewPassword')} 
         />
         
         <PasswordInput 
           field="confirmPassword" 
-          label="Confirm New Password" 
-          placeholder="Confirm new password" 
+          label={t('settings.confirmPassword')} 
+          placeholder={t('settings.confirmNewPassword')} 
         />
 
         <div className="pt-2">
@@ -137,7 +139,7 @@ const ChangePasswordForm = () => {
             variant="primary"
             isLoading={isLoading}
           >
-            {isLoading ? 'Updating...' : 'Update Password'}
+            {isLoading ? t('settings.changingPassword') : t('settings.updatePassword')}
           </Button>
         </div>
       </form>

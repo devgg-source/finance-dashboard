@@ -1,8 +1,8 @@
-# Finance Dashboard v2.1.1
+# Finance Dashboard v2.2
 
-A modern, elegant personal finance dashboard built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, AI-powered insights, user authentication, and cloud sync.
+A modern, elegant personal finance dashboard built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, AI-powered insights, user authentication, cloud sync, and multi-language support.
 
-![Finance Dashboard](https://img.shields.io/badge/version-2.1.1-blue.svg)
+![Finance Dashboard](https://img.shields.io/badge/version-2.2-blue.svg)
 ![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC.svg)
 ![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E.svg)
@@ -42,10 +42,18 @@ A modern, elegant personal finance dashboard built with React and Supabase. Trac
 - **Category Breakdown** - See where your money goes with detailed pie charts
 - **Key Metrics** - Average income, expense, and transaction counts
 
+### 🌐 Multi-Language Support (New in v2.2)
+- **5 Languages** - English, Hindi (हिन्दी), Tamil (தமிழ்), Spanish (Español), French (Français)
+- **Complete i18n** - All UI text fully translated
+- **Easy Switching** - Change language from Settings > Appearance
+- **Persistent Preference** - Language choice saved in settings
+- **Dynamic Content** - Charts, insights, categories, and transactions all translated
+
 ### ⚙️ Settings
 - **Profile Management** - Update display name and email
 - **Password Security** - Change password with validation
 - **Currency Preferences** - Choose from INR, USD, EUR, GBP
+- **Language Selection** - Switch between 4 supported languages
 - **Data Export** - Export all transactions as JSON
 - **Data Management** - Delete all transaction data with confirmation
 
@@ -162,9 +170,16 @@ src/
 ├── context/             # React Context providers
 │   ├── AuthContext.jsx      # Authentication state
 │   ├── FinanceContext.jsx   # Finance data & operations
+│   ├── LanguageContext.jsx  # Multi-language i18n support
 │   ├── SettingsContext.jsx  # User preferences
 │   ├── SidebarContext.jsx   # Sidebar collapse state
 │   └── ToastContext.jsx     # Toast notifications
+├── locales/             # Translation files
+│   ├── en.json              # English translations
+│   ├── hi.json              # Hindi translations
+│   ├── ta.json              # Tamil translations
+│   ├── es.json              # Spanish translations
+│   └── fr.json              # French translations
 ├── pages/               # Route pages
 │   ├── LoginPage.jsx
 │   ├── SignupPage.jsx
@@ -195,8 +210,18 @@ src/
 - **Memoized Calculations** - Efficient re-renders with useMemo
 - **Optimized Context** - Minimal re-renders with useCallback
 
-## 🔄 What's New in v2.1.1
+## 🔄 What's New in v2.2
 
+- ✅ **Multi-Language Support (i18n)** - Full internationalization
+- ✅ **5 Languages** - English, Hindi, Tamil, Spanish, French
+- ✅ Complete translation of all UI components
+- ✅ Translated AI Insights with dynamic messages
+- ✅ Translated chart labels and legends
+- ✅ Translated categories and transaction types
+- ✅ Language selector in Settings > Appearance
+- ✅ Custom i18n implementation with React Context
+
+### Previous (v2.1.1)
 - ✅ **Edit Transaction** - Edit existing transactions with pre-filled modal
 - ✅ **Floored Currency Values** - All amounts display as whole numbers
 - ✅ Improved UI with edit/delete action buttons on hover
@@ -229,7 +254,7 @@ src/
 ### Version 3.0 (Planned)
 - [ ] AI Chat Assistant (OpenAI/Gemini integration)
 - [ ] Light/Dark theme toggle
-- [ ] Multi-language support (i18n)
+- [x] ~~Multi-language support (i18n)~~ ✅ Added in v2.2
 - [ ] Data export as CSV/PDF
 - [ ] Budget goals and alerts
 - [ ] Recurring transactions

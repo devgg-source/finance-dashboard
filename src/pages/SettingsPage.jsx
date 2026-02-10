@@ -14,6 +14,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
+import { useTranslation } from '../context/LanguageContext';
 import EditProfileForm from '../components/settings/EditProfileForm';
 import ChangePasswordForm from '../components/settings/ChangePasswordForm';
 import AppearanceForm from '../components/settings/AppearanceForm';
@@ -24,6 +25,7 @@ const SettingsPage = () => {
   const { user } = useAuth();
   const { transactions, clearAllData } = useFinance();
   const toast = useToast();
+  const { t } = useTranslation();
 
   // State
   const [isDeletingData, setIsDeletingData] = useState(false);
@@ -84,7 +86,7 @@ const SettingsPage = () => {
   // Export transactions as JSON
   const handleExportData = async () => {
     if (transactions.length === 0) {
-      toast.warning('No data to export');
+      toast.warning(t('settings.noDataToExport'));
       return;
     }
 
@@ -115,9 +117,9 @@ const SettingsPage = () => {
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
 
-      toast.success('Data exported successfully');
+      toast.success(t('settings.dataExported'));
     } catch (error) {
-      toast.error('Failed to export data');
+      toast.error(t('settings.exportFailed'));
     } finally {
       setIsExporting(false);
     }
@@ -132,10 +134,10 @@ const SettingsPage = () => {
     setIsDeletingData(true);
     try {
       await clearAllData();
-      toast.success('All data deleted successfully');
+      toast.success(t('settings.dataDeleted'));
       setShowDeleteDialog(false);
     } catch (error) {
-      toast.error('Failed to delete data');
+      toast.error(t('settings.deleteFailed'));
     } finally {
       setIsDeletingData(false);
     }
@@ -179,8 +181,8 @@ const SettingsPage = () => {
     <div className="space-y-6 max-w-4xl">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Settings</h1>
-        <p className="text-slate-500 mt-1 text-sm">Manage your account and preferences</p>
+        <h1 className="text-2xl font-bold text-white tracking-tight">{t('settings.title')}</h1>
+        <p className="text-slate-500 mt-1 text-sm">{t('settings.subtitle')}</p>
       </div>
 
       {/* Profile Section - TODO: Implement profile update
@@ -342,8 +344,8 @@ const SettingsPage = () => {
 
       {/* Data Management Section */}
       <div className="bg-[#12121a] rounded-2xl p-6 border border-white/[0.06]">
-        <h3 className="text-lg font-semibold text-white mb-2">Data Management</h3>
-        <p className="text-slate-500 text-sm mb-6">Export or delete your data</p>
+        <h3 className="text-lg font-semibold text-white mb-2">{t('settings.dataManagement')}</h3>
+        <p className="text-slate-500 text-sm mb-6">{t('settings.exportOrDelete')}</p>
         
         <div className="flex flex-col sm:flex-row gap-3">
           <Button 
@@ -352,14 +354,14 @@ const SettingsPage = () => {
             variant="secondary"
             icon={Download}
           >
-            Export All Data
+            {t('settings.exportData')}
           </Button>
           <Button 
             onClick={handleDeleteClick}
             variant="danger"
             icon={Trash2}
           >
-            Delete All Data
+            {t('settings.deleteData')}
           </Button>
         </div>
       </div>
@@ -369,10 +371,10 @@ const SettingsPage = () => {
         isOpen={showDeleteDialog}
         onClose={() => setShowDeleteDialog(false)}
         onConfirm={handleDeleteConfirm}
-        title="Delete All Data"
-        message="Are you sure you want to delete all your transaction data? This action cannot be undone and all your financial records will be permanently removed."
-        confirmLabel="Delete All"
-        cancelLabel="Cancel"
+        title={t('settings.deleteData')}
+        message={t('settings.deleteConfirmMessage')}
+        confirmLabel={t('settings.deleteAll')}
+        cancelLabel={t('common.cancel')}
         confirmVariant="danger"
         isLoading={isDeletingData}
         icon={Trash2}

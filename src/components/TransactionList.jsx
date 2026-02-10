@@ -3,11 +3,13 @@ import { Trash2, Pencil, ArrowUpRight, ArrowDownRight, Wallet, Loader2 } from 'l
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
 import { useSettings } from '../context/SettingsContext';
+import { useTranslation } from '../context/LanguageContext';
 
 const TransactionList = ({ limit, onEdit }) => {
   const { transactions, deleteTransaction, getCategoryById } = useFinance();
   const toast = useToast();
   const { formatCurrency } = useSettings();
+  const { t } = useTranslation();
   const [deletingId, setDeletingId] = useState(null);
   
   const displayTransactions = limit ? transactions.slice(0, limit) : transactions;
@@ -84,7 +86,7 @@ const TransactionList = ({ limit, onEdit }) => {
             <div className="flex-1 min-w-0">
               <p className="font-medium text-white text-sm truncate">{transaction.description}</p>
               <p className="text-xs text-slate-500 mt-0.5">
-                {category?.name} <span className="text-slate-600">•</span> {formatDate(transaction.date)}
+                {t(`categories.${transaction.category}`)} <span className="text-slate-600">•</span> {formatDate(transaction.date)}
               </p>
             </div>
             

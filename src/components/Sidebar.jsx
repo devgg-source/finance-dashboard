@@ -4,23 +4,26 @@ import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, Chevro
 import { useSidebar } from '../context/SidebarContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
+import { useTranslation } from '../context/LanguageContext';
 import ConfirmDialog from './ui/ConfirmDialog';
-
-const navItems = [
-  { path: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { path: '/transactions', icon: Receipt, label: 'Transactions' },
-  { path: '/analytics', icon: PieChart, label: 'Analytics' },
-  { path: '/settings', icon: Settings, label: 'Settings' },
-];
 
 const Sidebar = () => {
   const { isCollapsed, toggleSidebar } = useSidebar();
   const { user, signOut } = useAuth();
   const { addToast } = useToast();
+  const { t } = useTranslation();
   const navigate = useNavigate();
 
   const [showLogoutDialog, setShowLogoutDialog] = useState(false);
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+
+  // Nav items with translations
+  const navItems = [
+    { path: '/', icon: LayoutDashboard, label: t('common.dashboard') },
+    { path: '/transactions', icon: Receipt, label: t('common.transactions') },
+    { path: '/analytics', icon: PieChart, label: t('common.analytics') },
+    { path: '/settings', icon: Settings, label: t('common.settings') },
+  ];
 
   // Get user display name and initials
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
@@ -37,7 +40,7 @@ const Sidebar = () => {
       setShowLogoutDialog(false);
       navigate('/login', { state: { loggedOut: true } });
     } catch (error) {
-      addToast('Failed to logout', 'error');
+      addToast(t('toast.logoutError'), 'error');
       setIsLoggingOut(false);
     }
   };
@@ -79,7 +82,7 @@ const Sidebar = () => {
       {/* Navigation */}
       <nav className="flex-1 py-6">
         {!isCollapsed && (
-          <p className="px-4 mb-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">Menu</p>
+          <p className="px-4 mb-3 text-[11px] font-medium text-slate-500 uppercase tracking-wider">{t('common.menu')}</p>
         )}
         <ul className="space-y-1.5">
           {navItems.map(({ path, icon: Icon, label }) => (
@@ -139,7 +142,7 @@ const Sidebar = () => {
                 onClick={handleLogoutClick}
                 className="absolute left-full ml-2 px-2.5 py-1.5 bg-[#1e1e28] text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 whitespace-nowrap shadow-xl z-50 hover:bg-red-500/20 hover:text-red-400"
               >
-                Logout
+                {t('common.logout')}
               </button>
             )}
           </div>
@@ -152,7 +155,7 @@ const Sidebar = () => {
               <button 
                 onClick={handleLogoutClick}
                 className="p-1.5 text-slate-500 hover:text-red-400 rounded transition-colors"
-                title="Logout"
+                title={t('common.logout')}
               >
                 <LogOut className="w-4 h-4" />
               </button>
@@ -166,10 +169,10 @@ const Sidebar = () => {
         isOpen={showLogoutDialog}
         onClose={() => setShowLogoutDialog(false)}
         onConfirm={handleLogoutConfirm}
-        title="Logout"
-        message="Are you sure you want to logout? You will need to sign in again to access your account."
-        confirmLabel="Logout"
-        cancelLabel="Cancel"
+        title={t('common.logout')}
+        message={t('auth.logoutConfirmMessage')}
+        confirmLabel={t('common.logout')}
+        cancelLabel={t('common.cancel')}
         confirmVariant="danger"
         isLoading={isLoggingOut}
         icon={LogOut}

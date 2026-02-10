@@ -1,8 +1,10 @@
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { useSettings } from '../context/SettingsContext';
+import { useTranslation } from '../context/LanguageContext';
 
 const StatCard = ({ title, amount, icon: Icon, trend, trendValue, color = 'primary' }) => {
   const { formatCurrency } = useSettings();
+  const { t } = useTranslation();
   
   const colorConfig = {
     primary: {
@@ -46,7 +48,7 @@ const StatCard = ({ title, amount, icon: Icon, trend, trendValue, color = 'prima
           <div className="flex items-center gap-2">
             {trendValue === 0 ? (
               <div className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-slate-500/10 text-slate-400">
-                No change
+                {t('dashboard.noChange')}
               </div>
             ) : (
               <>
@@ -58,7 +60,7 @@ const StatCard = ({ title, amount, icon: Icon, trend, trendValue, color = 'prima
                   {trend === 'up' ? <TrendingUp className="w-3 h-3" /> : <TrendingDown className="w-3 h-3" />}
                   {trendValue}%
                 </div>
-                <span className="text-slate-500 text-xs">vs last month</span>
+                <span className="text-slate-500 text-xs">{t('dashboard.vsLastMonth')}</span>
               </>
             )}
           </div>

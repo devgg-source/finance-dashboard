@@ -21,6 +21,7 @@ import {
   Brain
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
+import { useTranslation } from '../context/LanguageContext';
 import { generateInsights, PRIORITY } from '../utils/insightsEngine';
 
 // Icon mapping
@@ -78,9 +79,25 @@ const priorityStyles = {
 };
 
 // Single Insight Card
-const InsightCard = ({ insight }) => {
+const InsightCard = ({ insight, t }) => {
   const styles = priorityStyles[insight.priority] || priorityStyles.tip;
   const Icon = iconMap[insight.icon] || Lightbulb;
+
+  // Get translated priority label
+  const priorityLabel = t(`insights.${insight.priority}`);
+
+  // Get translated title and message
+  const getTranslatedText = (key, params = {}) => {
+    let text = t(`insights.${key}`);
+    // Replace template params like {{percent}}, {{category}}, {{months}}
+    Object.entries(params).forEach(([param, value]) => {
+      text = text.replace(`{{${param}}}`, value);
+    });
+    return text;
+  };
+
+  const title = insight.titleKey ? getTranslatedText(insight.titleKey, insight.params) : insight.title;
+  const message = insight.messageKey ? getTranslatedText(insight.messageKey, insight.params) : insight.message;
 
   return (
     <div 
@@ -94,14 +111,14 @@ const InsightCard = ({ insight }) => {
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
             <h4 className={`font-semibold text-sm ${styles.title}`}>
-              {insight.title}
+              {title}
             </h4>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase ${styles.badge}`}>
-              {insight.priority}
+              {priorityLabel}
             </span>
           </div>
           <p className="text-slate-400 text-sm leading-relaxed">
-            {insight.message}
+            {message}
           </p>
         </div>
       </div>
@@ -112,10 +129,16 @@ const InsightCard = ({ insight }) => {
 // Main AI Insights Component
 const AIInsights = () => {
   const { transactions } = useFinance();
+  const { t } = useTranslation();
 
   const insights = useMemo(() => {
     return generateInsights(transactions);
   }, [transactions]);
+
+  // Format insight count text
+  const insightCountText = insights.length === 1 
+    ? t('insights.insightCount').replace('{{count}}', insights.length)
+    : t('insights.insightsCount').replace('{{count}}', insights.length);
 
   return (
     <div className="bg-slate-900/50 backdrop-blur-sm rounded-2xl border border-white/[0.06] p-6">
@@ -125,12 +148,12 @@ const AIInsights = () => {
           <Brain className="w-5 h-5 text-indigo-400" />
         </div>
         <div>
-          <h3 className="text-lg font-semibold text-white">AI Insights</h3>
-          <p className="text-xs text-slate-500">Smart analysis of your finances</p>
+          <h3 className="text-lg font-semibold text-white">{t('insights.title')}</h3>
+          <p className="text-xs text-slate-500">{t('insights.subtitle')}</p>
         </div>
         <div className="ml-auto">
           <span className="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded-full">
-            {insights.length} insight{insights.length !== 1 ? 's' : ''}
+            {insightCountText}
           </span>
         </div>
       </div>
@@ -138,7 +161,7 @@ const AIInsights = () => {
       {/* Insights Grid */}
       <div className="space-y-3">
         {insights.map((insight) => (
-          <InsightCard key={insight.id} insight={insight} />
+          <InsightCard key={insight.id} insight={insight} t={t} />
         ))}
       </div>
 
@@ -146,7 +169,7 @@ const AIInsights = () => {
       <div className="mt-4 pt-4 border-t border-white/[0.06]">
         <p className="text-xs text-slate-500 flex items-center gap-1">
           <Sparkles className="w-3 h-3" />
-          Insights update automatically as you add transactions
+          {t('insights.footer')}
         </p>
       </div>
     </div>

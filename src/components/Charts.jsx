@@ -1,5 +1,6 @@
 import { PieChart, Pie, Cell, ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
 import { useFinance } from '../context/FinanceContext';
+import { useTranslation } from '../context/LanguageContext';
 import { TrendingUp, PieChart as PieChartIcon } from 'lucide-react';
 
 // Custom tooltip for charts
@@ -40,6 +41,7 @@ const CustomLegend = ({ payload }) => {
 // Area Chart for monthly overview
 export const MonthlyOverviewChart = () => {
   const { monthlyData } = useFinance();
+  const { t } = useTranslation();
 
   // Check if there's any data
   const hasData = monthlyData.some(m => m.income > 0 || m.expense > 0 || m.savings > 0);
@@ -49,8 +51,8 @@ export const MonthlyOverviewChart = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-white">Monthly Overview</h3>
-          <p className="text-slate-500 text-sm mt-0.5">Income vs Expenses trend</p>
+          <h3 className="text-lg font-semibold text-white">{t('charts.monthlyOverview')}</h3>
+          <p className="text-slate-500 text-sm mt-0.5">{t('charts.incomeVsExpenses')}</p>
         </div>
         <div className="p-2.5 rounded-xl bg-emerald-500/10">
           <TrendingUp className="w-5 h-5 text-emerald-400" />
@@ -60,7 +62,7 @@ export const MonthlyOverviewChart = () => {
       <div className="h-72">
         {!hasData ? (
           <div className="h-full flex items-center justify-center">
-            <p className="text-slate-500 text-sm">No transaction data yet. Add some transactions to see the chart.</p>
+            <p className="text-slate-500 text-sm">{t('charts.noDataYet')}</p>
           </div>
         ) : (
           <ResponsiveContainer width="100%" height="100%">
@@ -96,9 +98,9 @@ export const MonthlyOverviewChart = () => {
             />
             <Tooltip content={<CustomTooltip />} />
             <Legend content={<CustomLegend />} />
-            <Area type="monotone" dataKey="income" stroke="#10b981" fill="url(#incomeGradient)" strokeWidth={2.5} dot={false} />
-            <Area type="monotone" dataKey="expense" stroke="#f43f5e" fill="url(#expenseGradient)" strokeWidth={2.5} dot={false} />
-            <Area type="monotone" dataKey="savings" stroke="#6366f1" fill="url(#savingsGradient)" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="income" name={t('charts.income')} stroke="#10b981" fill="url(#incomeGradient)" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="expense" name={t('charts.expense')} stroke="#f43f5e" fill="url(#expenseGradient)" strokeWidth={2.5} dot={false} />
+            <Area type="monotone" dataKey="savings" name={t('charts.savings')} stroke="#6366f1" fill="url(#savingsGradient)" strokeWidth={2.5} dot={false} />
           </AreaChart>
         </ResponsiveContainer>
         )}
@@ -110,6 +112,12 @@ export const MonthlyOverviewChart = () => {
 // Pie Chart for expense breakdown
 export const ExpenseBreakdownChart = () => {
   const { expensesByCategory } = useFinance();
+  const { t } = useTranslation();
+
+  // Helper to get translated category name
+  const getCategoryName = (categoryId) => {
+    return t(`categories.${categoryId}`) || categoryId;
+  };
 
   // Calculate total for percentage
   const total = expensesByCategory.reduce((sum, item) => sum + item.value, 0);
@@ -119,8 +127,8 @@ export const ExpenseBreakdownChart = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h3 className="text-lg font-semibold text-white">Expense Breakdown</h3>
-          <p className="text-slate-500 text-sm mt-0.5">By category this month</p>
+          <h3 className="text-lg font-semibold text-white">{t('analytics.expenseBreakdown')}</h3>
+          <p className="text-slate-500 text-sm mt-0.5">{t('analytics.byCategory')}</p>
         </div>
         <div className="p-2.5 rounded-xl bg-indigo-500/10">
           <PieChartIcon className="w-5 h-5 text-indigo-400" />
@@ -129,7 +137,7 @@ export const ExpenseBreakdownChart = () => {
       
       {expensesByCategory.length === 0 ? (
         <div className="h-56 flex items-center justify-center">
-          <p className="text-slate-500 text-sm">No expense data yet. Add some expenses to see the breakdown.</p>
+          <p className="text-slate-500 text-sm">{t('analytics.noDataYet')}</p>
         </div>
       ) : (
         <div className="flex items-center gap-6">
@@ -171,7 +179,7 @@ export const ExpenseBreakdownChart = () => {
               <div key={index} className="flex items-center gap-3">
                 <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: category.color }} />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-white truncate">{category.name}</p>
+                  <p className="text-sm text-white truncate">{getCategoryName(category.id)}</p>
                   <p className="text-xs text-slate-500">
                     {Math.floor((category.value / total) * 100)}% • ₹{Math.floor(category.value).toLocaleString('en-IN')}
                   </p>
