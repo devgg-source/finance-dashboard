@@ -85,7 +85,7 @@ const LoginPage = () => {
             <span className="text-2xl font-bold text-white">₹</span>
           </div>
           <h1 className="text-2xl font-bold text-white">Welcome back</h1>
-          <p className="text-slate-500 mt-2">Sign in to your Finance Dashboard</p>
+          <p className="text-slate-500 mt-2">Sign in to your Xpensio</p>
         </div>
 
         {/* Form */}
@@ -179,7 +179,7 @@ const LoginPage = () => {
               <div className="w-full border-t border-white/[0.06]"></div>
             </div>
             <div className="relative flex justify-center text-xs">
-              <span className="px-2 bg-[#12121a] text-slate-500">New to Finance Dashboard?</span>
+              <span className="px-2 bg-[#12121a] text-slate-500">New to Xpensio?</span>
             </div>
           </div>
 

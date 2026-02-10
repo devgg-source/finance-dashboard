@@ -382,7 +382,7 @@ const SettingsPage = () => {
 
       {/* Footer */}
       <div className="text-center py-4">
-        <p className="text-slate-600 text-sm">Finance Dashboard v2.0.0</p>
+        <p className="text-slate-600 text-sm">Xpensio v2.2.0</p>
         <p className="text-slate-600 text-xs mt-1">Made with ❤️ for portfolio</p>
       </div>
     </div>
