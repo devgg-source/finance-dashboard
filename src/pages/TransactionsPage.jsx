@@ -230,7 +230,7 @@ const TransactionsPage = () => {
             onChange={(e) => setCategoryFilter(e.target.value)}
             className="px-3 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all cursor-pointer"
           >
-            <option value="all">{t('categories.all')}</option>
+            <option value="all">{t('transactions.allCategories')}</option>
             {categories.map(cat => (
               <option key={cat.id} value={cat.id}>{getCategoryName(cat.id)}</option>
             ))}
