@@ -1,5 +1,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2, Pencil } from 'lucide-react';
+import DatePicker from 'react-datepicker';
+import 'react-datepicker/dist/react-datepicker.css';
+import '../styles/datepicker.css';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
 import { useTranslation } from '../context/LanguageContext';
@@ -464,14 +467,17 @@ const TransactionsPage = () => {
               {/* Date */}
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">{t('transactions.date')}</label>
-                <div className="relative">
-                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
-                  <input
-                    type="date"
-                    value={newTransaction.date}
-                    onChange={(e) => setNewTransaction(prev => ({ ...prev, date: e.target.value }))}
-                    className="w-full pl-10 pr-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white text-sm focus:outline-none focus:border-indigo-500/50 transition-all"
-                    required
+                <div className="datepicker-wrapper">
+                  <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 z-10 pointer-events-none" />
+                  <DatePicker
+                    selected={newTransaction.date ? new Date(newTransaction.date) : new Date()}
+                    onChange={(date) => setNewTransaction(prev => ({ ...prev, date: date.toISOString().split('T')[0] }))}
+                    dateFormat="dd MMM yyyy"
+                    showMonthDropdown
+                    showYearDropdown
+                    dropdownMode="select"
+                    maxDate={new Date()}
+                    placeholderText="Select date"
                   />
                 </div>
               </div>

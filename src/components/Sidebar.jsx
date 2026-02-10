@@ -61,7 +61,7 @@ const Sidebar = () => {
           </div>
           {!isCollapsed && (
             <div>
-              <span className="text-base font-semibold text-white tracking-tight">FinanceApp</span>
+              <span className="text-base font-semibold text-white tracking-tight">Xpensio</span>
             </div>
           )}
         </div>
