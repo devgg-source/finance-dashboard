@@ -22,7 +22,8 @@ import {
 } from 'lucide-react';
 import { useFinance } from '../context/FinanceContext';
 import { useTranslation } from '../context/LanguageContext';
-import { generateInsights, PRIORITY } from '../utils/insightsEngine';
+import { generateInsights, generateRecurringInsights, PRIORITY } from '../utils/insightsEngine';
+import { useRecurring } from '../context/RecurringContext';
 
 // Icon mapping
 const iconMap = {
@@ -43,7 +44,9 @@ const iconMap = {
   'shield-check': ShieldCheck,
   'edit-3': Edit3,
   'calendar-check': CalendarCheck,
-  'lightbulb': Lightbulb
+  'lightbulb': Lightbulb,
+  'bell-ring': AlertCircle,
+  'refresh-cw': Sparkles,
 };
 
 // Priority-based styling
@@ -131,9 +134,25 @@ const AIInsights = () => {
   const { transactions } = useFinance();
   const { t } = useTranslation();
 
+  // Safely try to get recurring context (may not be available)
+  let recurringTransactions = [];
+  try {
+    const recurring = useRecurring();
+    recurringTransactions = recurring?.recurringTransactions || [];
+  } catch {
+    // RecurringContext not available — that's fine
+  }
+
   const insights = useMemo(() => {
-    return generateInsights(transactions);
-  }, [transactions]);
+    const baseInsights = generateInsights(transactions);
+    const recurringInsights = generateRecurringInsights(recurringTransactions);
+    
+    // Merge and re-sort by priority
+    const all = [...recurringInsights, ...baseInsights];
+    const priorityOrder = { critical: 0, warning: 1, positive: 2, tip: 3 };
+    all.sort((a, b) => priorityOrder[a.priority] - priorityOrder[b.priority]);
+    return all.slice(0, 6);
+  }, [transactions, recurringTransactions]);
 
   // Format insight count text
   const insightCountText = insights.length === 1 

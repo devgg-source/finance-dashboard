@@ -1,104 +1,105 @@
-# Xpensio v2.2
+# Xpensio — Personal Finance Tracker with Recurring Transaction Detection
 
-A modern, elegant personal finance app built with React and Supabase. Track your income, expenses, and savings with beautiful visualizations, AI-powered insights, user authentication, cloud sync, and multi-language support.
+I built Xpensio because every free finance app I tried had the same problem: they tracked what I'd already spent, but never warned me about what was coming. Subscriptions I forgot about, bills due tomorrow, rent I hadn't budgeted for — the important stuff always slipped through.
 
-![Xpensio](https://img.shields.io/badge/version-2.2-blue.svg)
-![React](https://img.shields.io/badge/React-18.2.0-61DAFB.svg)
-![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.x-38B2AC.svg)
-![Supabase](https://img.shields.io/badge/Supabase-Auth%20%26%20DB-3ECF8E.svg)
+So I built a tool that actually solves this. Xpensio scans your transaction history, detects recurring patterns (subscriptions, EMIs, rent, salary), and tells you what's due, what's overdue, and how much your recurring commitments actually cost per month/year. No more surprise charges.
 
-## ✨ Features
+![Xpensio](https://img.shields.io/badge/version-2.3-blue.svg)
 
-### 🔐 Authentication
-- **User Registration** - Sign up with email and password
-- **Secure Login** - Email/password authentication via Supabase
-- **Password Recovery** - Forgot password with email reset link
-- **Password Change** - Update password from settings
-- **Protected Routes** - Secure access to dashboard features
+## The Problem
 
-### Dashboard
-- **Real-time Statistics** - View total balance, income, expenses, and savings at a glance
-- **Monthly Trends** - Track percentage changes compared to the previous month
-- **Interactive Charts** - Visualize your financial data with beautiful area and pie charts
-- **Recent Transactions** - Quick overview of your latest financial activity
+Most personal finance tools are glorified spreadsheets. You enter transactions, see pie charts, and that's it. But the real pain points are:
 
-### 🤖 AI Insights (New in v2.1)
-- **Rule-Based AI Engine** - Smart financial analysis without external APIs
-- **Spending Trends** - Compare this month vs last month spending
-- **Savings Health** - Track savings rate with personalized recommendations
-- **Category Analysis** - Detect unusual spending patterns and anomalies
-- **Smart Tips** - Emergency fund tracking, consistency rewards
-- **Priority Alerts** - Critical, warning, positive, and tip notifications
+1. **Forgetting subscriptions** — Netflix, Spotify, gym, cloud storage... small amounts that add up to ₹5,000+/month without you realizing
+2. **Missing bill deadlines** — Electricity, internet, insurance premiums due at irregular intervals
+3. **No forward visibility** — You know what you spent last month, but not what you'll owe next week
 
-### Transactions
-- **Full CRUD Operations** - Add, view, and delete transactions
-- **Cloud Sync** - All transactions stored in Supabase database
-- **Smart Filtering** - Filter by type (income/expense/savings), category, or search by description
-- **Category Management** - Organized categories with icons for easy identification
+## How Xpensio Solves This
 
-### Analytics
-- **Income vs Expenses** - 6-month trend visualization
-- **Spending Patterns** - Analyze spending by day of the week
-- **Category Breakdown** - See where your money goes with detailed pie charts
-- **Key Metrics** - Average income, expense, and transaction counts
+### Recurring Transaction Detection Engine
 
-### 🌐 Multi-Language Support (New in v2.2)
-- **5 Languages** - English, Hindi (हिन्दी), Tamil (தமிழ்), Spanish (Español), French (Français)
-- **Complete i18n** - All UI text fully translated
-- **Easy Switching** - Change language from Settings > Appearance
-- **Persistent Preference** - Language choice saved in settings
-- **Dynamic Content** - Charts, insights, categories, and transactions all translated
+The core of this app is a pattern detection algorithm in [`src/utils/recurringDetector.js`](src/utils/recurringDetector.js) that:
 
-### ⚙️ Settings
-- **Profile Management** - Update display name and email
-- **Password Security** - Change password with validation
-- **Currency Preferences** - Choose from INR, USD, EUR, GBP
-- **Language Selection** - Switch between 4 supported languages
-- **Data Export** - Export all transactions as JSON
-- **Data Management** - Delete all transaction data with confirmation
+1. **Groups transactions** by normalized description (case-insensitive, stripped of reference numbers and dates)
+2. **Analyzes timing intervals** between transactions in each group to detect weekly, biweekly, monthly, quarterly, or yearly patterns
+3. **Checks amount consistency** — allows up to 10% variance (utility bills fluctuate)
+4. **Scores confidence** by combining interval regularity + amount similarity
+5. **Suggests detected patterns** to the user with one-click tracking
 
-## 🛠️ Tech Stack
+Once tracked, recurring transactions show:
+- **Overdue alerts** — missed payments highlighted in red
+- **Due soon warnings** — payments coming in the next 3 days
+- **Monthly cost rollup** — total recurring expenses and income normalized to monthly
+- **Mark as paid** — creates the actual transaction and advances the next due date
+- **Pause/Resume** — temporarily disable tracking without losing history
 
-- **Frontend Framework**: React 18.2 with Vite
-- **Styling**: Tailwind CSS 3.x
-- **Backend**: Supabase (Auth + PostgreSQL)
-- **Charts**: Recharts
-- **Icons**: Lucide React
-- **Routing**: React Router DOM 6
-- **State Management**: React Context API
+### AI-Powered Financial Insights
 
-## 🚀 Getting Started
+A rule-based insights engine ([`src/utils/insightsEngine.js`](src/utils/insightsEngine.js)) analyzes your data and surfaces actionable alerts:
+
+- Spending increased 30% vs last month? Critical alert.
+- Saving less than 20% of income? Warning with a target.
+- 3 overdue recurring payments? Shows up on your dashboard.
+- Your recurring expenses total ₹8,000/month (₹96,000/year)? You should know that.
+
+No external API calls. No data leaves your browser. All analysis runs client-side.
+
+### Other Features
+
+- **Full transaction management** — Add, edit, delete, filter, search
+- **Analytics dashboard** — 6-month trends, spending by day of week, category breakdown
+- **Auth & cloud sync** — Supabase authentication with row-level security
+- **Offline-capable** — IndexedDB for local storage, localStorage fallback for recurring data
+- **5 languages** — English, Hindi, Tamil, Spanish, French (complete i18n, not just UI labels — insights, categories, and chart labels are all translated)
+- **Data export** — Download your transactions as JSON
+
+## Technical Decisions Worth Noting
+
+### Why IndexedDB + Supabase (not just one)?
+
+Supabase handles auth and cloud sync, but I wanted the app to work when:
+- The user's internet drops mid-session
+- The Supabase free tier rate-limits requests
+- The recurring_transactions table hasn't been created yet (graceful fallback to localStorage)
+
+This dual-storage approach taught me more about data consistency and conflict resolution than any tutorial would.
+
+### Why a custom i18n system instead of react-i18next?
+
+The app needed to translate dynamic content — AI insight messages with interpolated values like "spending up {{percent}}%", category names inside sentences, chart labels. A lightweight Context-based system with JSON locale files gave me full control without the 40KB bundle cost of a library. Five language files, one `useTranslation` hook, zero dependencies.
+
+### Why rule-based insights instead of calling an LLM?
+
+Three reasons:
+1. **Privacy** — Financial data shouldn't leave the browser
+2. **Cost** — No API keys, no usage limits, no billing surprises
+3. **Speed** — Instant analysis on every transaction change, no network latency
+
+The detection engine uses statistical methods (interval matching with tolerance windows, amount deviation ratios) that are deterministic and explainable.
+
+## Getting Started
 
 ### Prerequisites
-- Node.js 16+ 
-- npm or yarn
-- Supabase account
+- Node.js 16+
+- Supabase account (free tier works)
 
-### Installation
+### Setup
 
-1. Clone the repository
 ```bash
 git clone https://github.com/devgg-source/finance-dashboard.git
 cd finance-dashboard
-git checkout finance-dashboard-v2.1
-```
-
-2. Install dependencies
-```bash
 npm install
 ```
 
-3. Set up environment variables
-```bash
-# Create .env file in root directory
+Create a `.env` file:
+```
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_anon_key
 ```
 
-4. Set up Supabase database
-
-Create a `transactions` table in your Supabase project:
+Set up the database:
 ```sql
+-- Transactions table
 create table transactions (
   id uuid default gen_random_uuid() primary key,
   user_id uuid references auth.users(id) on delete cascade,
@@ -110,167 +111,101 @@ create table transactions (
   created_at timestamp with time zone default now()
 );
 
--- Enable Row Level Security
+-- Recurring transactions table
+create table recurring_transactions (
+  id uuid default gen_random_uuid() primary key,
+  user_id uuid references auth.users(id) on delete cascade,
+  description text not null,
+  amount numeric not null,
+  type text not null check (type in ('income', 'expense', 'savings')),
+  category text not null,
+  frequency text not null check (frequency in ('daily', 'weekly', 'biweekly', 'monthly', 'quarterly', 'yearly')),
+  start_date date not null,
+  next_due_date date not null,
+  last_paid_date date,
+  is_active boolean default true,
+  is_auto_detected boolean default false,
+  confidence integer,
+  created_at timestamp with time zone default now()
+);
+
+-- Enable RLS on both tables
 alter table transactions enable row level security;
+alter table recurring_transactions enable row level security;
 
--- Policy: Users can only see their own transactions
-create policy "Users can view own transactions"
-  on transactions for select
-  using (auth.uid() = user_id);
+-- RLS policies for transactions
+create policy "Users can view own transactions" on transactions for select using (auth.uid() = user_id);
+create policy "Users can insert own transactions" on transactions for insert with check (auth.uid() = user_id);
+create policy "Users can update own transactions" on transactions for update using (auth.uid() = user_id);
+create policy "Users can delete own transactions" on transactions for delete using (auth.uid() = user_id);
 
--- Policy: Users can insert their own transactions
-create policy "Users can insert own transactions"
-  on transactions for insert
-  with check (auth.uid() = user_id);
-
--- Policy: Users can update their own transactions
-create policy "Users can update own transactions"
-  on transactions for update
-  using (auth.uid() = user_id);
-
--- Policy: Users can delete their own transactions
-create policy "Users can delete own transactions"
-  on transactions for delete
-  using (auth.uid() = user_id);
+-- RLS policies for recurring_transactions
+create policy "Users can view own recurring" on recurring_transactions for select using (auth.uid() = user_id);
+create policy "Users can insert own recurring" on recurring_transactions for insert with check (auth.uid() = user_id);
+create policy "Users can update own recurring" on recurring_transactions for update using (auth.uid() = user_id);
+create policy "Users can delete own recurring" on recurring_transactions for delete using (auth.uid() = user_id);
 ```
 
-5. Start the development server
+Run:
 ```bash
 npm run dev
 ```
 
-6. Open your browser and visit `http://localhost:5173`
+> **Note:** The recurring transactions feature works without the Supabase table — it falls back to localStorage automatically.
 
-### Build for Production
-
-```bash
-npm run build
-```
-
-The build output will be in the `dist` folder.
-
-## 📁 Project Structure
+## Project Structure
 
 ```
 src/
-├── components/          # Reusable UI components
-│   ├── Charts.jsx       # Area and Pie chart components
-│   ├── Sidebar.jsx      # Collapsible navigation with user info
-│   ├── StatCard.jsx     # Statistics display cards
-│   ├── Toast.jsx        # Notification component
-│   ├── TransactionList.jsx
-│   ├── settings/        # Settings components
-│   │   ├── ChangePasswordForm.jsx
-│   │   ├── EditProfileForm.jsx
-│   │   └── AppearanceForm.jsx
-│   └── ui/              # Reusable UI primitives
-│       ├── Button.jsx
-│       ├── ConfirmDialog.jsx
-│       └── Loader.jsx
-├── context/             # React Context providers
-│   ├── AuthContext.jsx      # Authentication state
-│   ├── FinanceContext.jsx   # Finance data & operations
-│   ├── LanguageContext.jsx  # Multi-language i18n support
-│   ├── SettingsContext.jsx  # User preferences
-│   ├── SidebarContext.jsx   # Sidebar collapse state
-│   └── ToastContext.jsx     # Toast notifications
-├── locales/             # Translation files
-│   ├── en.json              # English translations
-│   ├── hi.json              # Hindi translations
-│   ├── ta.json              # Tamil translations
-│   ├── es.json              # Spanish translations
-│   └── fr.json              # French translations
-├── pages/               # Route pages
-│   ├── LoginPage.jsx
-│   ├── SignupPage.jsx
-│   ├── ForgotPasswordPage.jsx
-│   ├── TransactionsPage.jsx
-│   ├── AnalyticsPage.jsx
-│   └── SettingsPage.jsx
+├── utils/
+│   ├── recurringDetector.js   # Pattern detection algorithm
+│   └── insightsEngine.js      # Rule-based financial insights
+├── context/
+│   ├── RecurringContext.jsx    # Recurring transaction state + Supabase/localStorage sync
+│   ├── FinanceContext.jsx      # Transaction state + computed metrics
+│   ├── AuthContext.jsx         # Supabase auth
+│   ├── LanguageContext.jsx     # i18n with 5 languages
+│   ├── SettingsContext.jsx     # User preferences
+│   ├── SidebarContext.jsx      # UI state
+│   └── ToastContext.jsx        # Notification queue system
+├── pages/
+│   ├── RecurringPage.jsx       # Recurring transaction management
+│   ├── TransactionsPage.jsx    # Transaction CRUD + filters
+│   ├── AnalyticsPage.jsx       # Charts and financial metrics
+│   └── SettingsPage.jsx        # Profile, security, preferences
+├── components/
+│   ├── AIInsights.jsx          # Dashboard insight cards
+│   ├── Charts.jsx              # Recharts area + pie charts
+│   ├── Sidebar.jsx             # Collapsible nav
+│   └── ui/                     # Button, Loader, ConfirmDialog
 ├── services/
-│   └── supabase.js      # Supabase client & services
-├── data/
-│   └── mockData.js      # Categories data
-├── App.jsx              # Main app with routing
-└── main.jsx             # Entry point
+│   ├── supabase.js             # Supabase client + transaction/recurring/auth services
+│   └── indexedDB.js            # IndexedDB wrapper for offline support
+├── locales/                    # en.json, hi.json, ta.json, es.json, fr.json
+└── App.jsx                     # Routing, providers, lazy loading
 ```
 
-## 🎨 Design Features
+## Tech Stack
 
-- **Dark Theme** - Easy on the eyes with a modern dark color palette
-- **Glassmorphism** - Subtle glass effects and gradients
-- **Responsive Layout** - Works on desktop and tablet devices
-- **Smooth Animations** - Polished transitions and hover effects
-- **Collapsible Sidebar** - More screen space when needed
+- **React 18** with Vite — code-split pages, lazy-loaded heavy components
+- **Tailwind CSS** — dark theme, responsive layout
+- **Supabase** — PostgreSQL + Auth + Row Level Security
+- **Recharts** — interactive area and pie charts
+- **Lucide** — consistent icon set
+- **React Router 6** — protected + public routes
 
-## ⚡ Performance Optimizations
+## Roadmap
 
-- **Code Splitting** - Lazy loading for pages and heavy components
-- **Suspense Boundaries** - Graceful loading states
-- **Memoized Calculations** - Efficient re-renders with useMemo
-- **Optimized Context** - Minimal re-renders with useCallback
+- [ ] CSV/PDF bank statement import
+- [ ] Budget goals with threshold alerts
+- [ ] PWA with service worker for full offline support
+- [ ] Browser notifications for upcoming bills
+- [ ] Light/dark theme toggle
 
-## 🔄 What's New in v2.2
+## License
 
-- ✅ **Multi-Language Support (i18n)** - Full internationalization
-- ✅ **5 Languages** - English, Hindi, Tamil, Spanish, French
-- ✅ Complete translation of all UI components
-- ✅ Translated AI Insights with dynamic messages
-- ✅ Translated chart labels and legends
-- ✅ Translated categories and transaction types
-- ✅ Language selector in Settings > Appearance
-- ✅ Custom i18n implementation with React Context
+MIT
 
-### Previous (v2.1.1)
-- ✅ **Edit Transaction** - Edit existing transactions with pre-filled modal
-- ✅ **Floored Currency Values** - All amounts display as whole numbers
-- ✅ Improved UI with edit/delete action buttons on hover
+## Author
 
-### Previous (v2.1.0)
-- ✅ **AI Insights Engine** - Rule-based smart financial analysis
-- ✅ Spending trend analysis (this month vs last)
-- ✅ Savings health calculator with recommendations
-- ✅ Category spending anomaly detection
-- ✅ Transaction pattern analysis
-- ✅ Personalized smart tips
-- ✅ Priority-based insight cards (critical, warning, positive, tip)
-- ✅ Enhanced toast notification system with queue management
-
-### Previous (v2.0)
-- ✅ User authentication (signup, login, logout)
-- ✅ Password recovery via email
-- ✅ Cloud database with Supabase
-- ✅ Row Level Security for user data isolation
-- ✅ Settings page with profile management
-- ✅ Change password functionality
-- ✅ Multi-currency support (INR, USD, EUR, GBP)
-- ✅ Data export as JSON
-- ✅ Delete all data with confirmation
-- ✅ Reusable UI components (Button, Loader, ConfirmDialog)
-- ✅ Improved sidebar with user avatar and logout
-
-## 🗺️ Roadmap
-
-### Version 3.0 (Planned)
-- [ ] AI Chat Assistant (OpenAI/Gemini integration)
-- [ ] Light/Dark theme toggle
-- [x] ~~Multi-language support (i18n)~~ ✅ Added in v2.2
-- [ ] Data export as CSV/PDF
-- [ ] Budget goals and alerts
-- [ ] Recurring transactions
-- [ ] Mobile responsive improvements
-- [ ] PWA support
-
-## 📝 License
-
-This project is open source and available under the [MIT License](LICENSE).
-
-## 👨‍💻 Author
-
-**Karthik** - [devgg-source](https://github.com/devgg-source)
-
----
-
-<p align="center">
-  Made with ❤️ using React, Tailwind CSS & Supabase
-</p>
+**Karthik** — [devgg-source](https://github.com/devgg-source)
