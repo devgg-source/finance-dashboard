@@ -1,6 +1,7 @@
 import { lazy, Suspense } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
 import { FinanceProvider } from './context/FinanceContext';
+import { RecurringProvider } from './context/RecurringContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
 import { SettingsProvider } from './context/SettingsContext';
 import { ToastProvider } from './context/ToastContext';
@@ -30,6 +31,7 @@ const Charts = lazy(() => import('./components/Charts').then(module => ({
   )
 })));
 const AIInsights = lazy(() => import('./components/AIInsights'));
+const RecurringPage = lazy(() => import('./pages/RecurringPage'));
 
 // Protected Route Component
 const ProtectedRoute = ({ children }) => {
@@ -168,6 +170,7 @@ const AppLayout = () => {
             <Routes>
               <Route path="/" element={<Dashboard />} />
               <Route path="/transactions" element={<TransactionsPage />} />
+              <Route path="/recurring" element={<RecurringPage />} />
               <Route path="/analytics" element={<AnalyticsPage />} />
               <Route path="/settings" element={<SettingsPage />} />
             </Routes>
@@ -209,9 +212,11 @@ function App() {
                   <Route path="/*" element={
                     <ProtectedRoute>
                       <FinanceProvider>
-                        <SidebarProvider>
-                          <AppLayout />
-                        </SidebarProvider>
+                        <RecurringProvider>
+                          <SidebarProvider>
+                            <AppLayout />
+                          </SidebarProvider>
+                        </RecurringProvider>
                       </FinanceProvider>
                     </ProtectedRoute>
                   } />

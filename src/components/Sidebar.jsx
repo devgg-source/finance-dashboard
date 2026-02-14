@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight, Settings } from 'lucide-react';
+import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight, Settings, RefreshCw } from 'lucide-react';
 import { useSidebar } from '../context/SidebarContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -21,6 +21,7 @@ const Sidebar = () => {
   const navItems = [
     { path: '/', icon: LayoutDashboard, label: t('common.dashboard') },
     { path: '/transactions', icon: Receipt, label: t('common.transactions') },
+    { path: '/recurring', icon: RefreshCw, label: t('common.recurring') },
     { path: '/analytics', icon: PieChart, label: t('common.analytics') },
     { path: '/settings', icon: Settings, label: t('common.settings') },
   ];

@@ -445,4 +445,88 @@ const generateSmartTips = (thisMonth, lastMonth, allTransactions) => {
   return insights;
 };
 
+/**
+ * Generate insights related to recurring transactions
+ * Called separately with recurring data for modularity
+ * @param {Array} recurringTransactions - Active recurring transactions
+ * @returns {Array} Recurring-specific insights
+ */
+export const generateRecurringInsights = (recurringTransactions) => {
+  if (!recurringTransactions || recurringTransactions.length === 0) return [];
+
+  const insights = [];
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+  const active = recurringTransactions.filter(r => r.isActive);
+
+  // Check for overdue recurring transactions
+  const overdue = active.filter(r => {
+    const due = new Date(r.nextDueDate);
+    due.setHours(0, 0, 0, 0);
+    return due < now;
+  });
+
+  if (overdue.length > 0) {
+    insights.push({
+      id: 'recurring-overdue',
+      priority: PRIORITY.CRITICAL,
+      category: CATEGORY.BUDGET,
+      titleKey: 'recurringOverdue',
+      messageKey: 'recurringOverdueMessage',
+      icon: 'alert-triangle',
+      params: { count: overdue.length, names: overdue.map(r => r.description).join(', ') }
+    });
+  }
+
+  // Check for upcoming payments (within 3 days)
+  const upcoming = active.filter(r => {
+    const due = new Date(r.nextDueDate);
+    due.setHours(0, 0, 0, 0);
+    const diff = (due - now) / (1000 * 60 * 60 * 24);
+    return diff >= 0 && diff <= 3;
+  });
+
+  if (upcoming.length > 0) {
+    insights.push({
+      id: 'recurring-upcoming',
+      priority: PRIORITY.WARNING,
+      category: CATEGORY.BUDGET,
+      titleKey: 'recurringUpcoming',
+      messageKey: 'recurringUpcomingMessage',
+      icon: 'bell-ring',
+      params: { count: upcoming.length, names: upcoming.map(r => r.description).join(', ') }
+    });
+  }
+
+  // Monthly subscription cost awareness
+  const monthlyExpenses = active
+    .filter(r => r.type === 'expense')
+    .reduce((total, r) => {
+      switch (r.frequency) {
+        case 'daily': return total + (r.amount * 30);
+        case 'weekly': return total + (r.amount * 4.33);
+        case 'biweekly': return total + (r.amount * 2.17);
+        case 'monthly': return total + r.amount;
+        case 'quarterly': return total + (r.amount / 3);
+        case 'yearly': return total + (r.amount / 12);
+        default: return total + r.amount;
+      }
+    }, 0);
+
+  if (monthlyExpenses > 0) {
+    const yearlyTotal = Math.round(monthlyExpenses * 12);
+    insights.push({
+      id: 'recurring-cost',
+      priority: monthlyExpenses > 10000 ? PRIORITY.WARNING : PRIORITY.TIP,
+      category: CATEGORY.SPENDING,
+      titleKey: 'recurringCost',
+      messageKey: 'recurringCostMessage',
+      icon: 'refresh-cw',
+      params: { monthly: Math.round(monthlyExpenses), yearly: yearlyTotal }
+    });
+  }
+
+  return insights;
+};
+
 export default generateInsights;
