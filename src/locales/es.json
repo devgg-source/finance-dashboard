@@ -319,5 +319,15 @@
     "markedPaid": "Marcado como pagado — transacción creada",
     "markPaidFailed": "Error al marcar como pagado",
     "patternAccepted": "El patrón ahora está siendo rastreado"
+  },
+  "pwa": {
+    "installTitle": "Instalar Xpensio",
+    "installDescription": "Agrega a tu pantalla de inicio para acceso rápido, soporte sin conexión y una experiencia de app nativa.",
+    "install": "Instalar",
+    "notNow": "Ahora no",
+    "updateTitle": "Actualización disponible",
+    "updateDescription": "Una nueva versión de Xpensio está disponible. Actualiza para obtenerla.",
+    "refresh": "Actualizar",
+    "later": "Más tarde"
   }
 }

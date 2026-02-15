@@ -13,6 +13,8 @@ import TransactionList from './components/TransactionList';
 import { useFinance } from './context/FinanceContext';
 import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2, Menu } from 'lucide-react';
 import Loader from './components/ui/Loader';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PWAUpdatePrompt from './components/PWAUpdatePrompt';
 import './index.css';
 
 // Lazy load pages and heavy components
@@ -211,6 +213,8 @@ function App() {
       <SettingsProvider>
         <ToastProvider>
           <AuthProvider>
+            <PWAUpdatePrompt />
+            <PWAInstallPrompt />
             <Router>
               <Suspense fallback={<Loader fullscreen />}>
                 <Routes>
