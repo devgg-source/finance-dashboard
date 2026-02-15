@@ -4,7 +4,7 @@ I built Xpensio because every free finance app I tried had the same problem: the
 
 So I built a tool that actually solves this. Xpensio scans your transaction history, detects recurring patterns (subscriptions, EMIs, rent, salary), and tells you what's due, what's overdue, and how much your recurring commitments actually cost per month/year. No more surprise charges.
 
-![Xpensio](https://img.shields.io/badge/version-2.3-blue.svg)
+![Xpensio](https://img.shields.io/badge/version-3.0-blue.svg)
 
 ## The Problem
 
@@ -52,6 +52,25 @@ No external API calls. No data leaves your browser. All analysis runs client-sid
 - **Offline-capable** — IndexedDB for local storage, localStorage fallback for recurring data
 - **5 languages** — English, Hindi, Tamil, Spanish, French (complete i18n, not just UI labels — insights, categories, and chart labels are all translated)
 - **Data export** — Download your transactions as JSON
+
+### Progressive Web App (PWA)
+
+Xpensio is a fully installable PWA. This isn't just a manifest slapped on — it's designed to work like a native app on your phone:
+
+- **Install to home screen** — Launches in standalone mode without the browser chrome. A smart install prompt appears after 3 seconds with a 7-day dismiss cooldown so it's not annoying.
+- **Offline-first** — Workbox precaches all static assets (JS, CSS, HTML, icons). Google Fonts are cached with a CacheFirst strategy (1-year TTL). The app loads instantly even without internet.
+- **Background updates** — Service worker checks for updates every hour. When a new version is available, a non-intrusive prompt lets you refresh when ready.
+- **iOS support** — Apple touch icon, `apple-mobile-web-app-capable` meta tags, `viewport-fit=cover` for edge-to-edge display.
+
+### Mobile Responsive Design
+
+Built mobile-first with Tailwind breakpoints at `sm` (640px), `md` (768px), and `lg` (1024px):
+
+- **Sidebar** → Mobile overlay drawer with backdrop blur, hamburger menu in a fixed top header, auto-closes on navigation
+- **Transaction table** → Collapses to compact card layout below 1024px with always-visible action buttons (no hover dependency on touch)
+- **Recurring cards** → Stack vertically below 768px with wrapping metadata
+- **Charts** → Pie chart and legend stack vertically on small screens, legend uses 2-column grid
+- **Auth pages** → Reduced padding on small devices to maximize form space
 
 ## Technical Decisions Worth Noting
 
@@ -176,7 +195,9 @@ src/
 ├── components/
 │   ├── AIInsights.jsx          # Dashboard insight cards
 │   ├── Charts.jsx              # Recharts area + pie charts
-│   ├── Sidebar.jsx             # Collapsible nav
+│   ├── Sidebar.jsx             # Collapsible nav + mobile drawer
+│   ├── PWAInstallPrompt.jsx    # Smart install-to-home-screen prompt
+│   ├── PWAUpdatePrompt.jsx     # Service worker update notification
 │   └── ui/                     # Button, Loader, ConfirmDialog
 ├── services/
 │   ├── supabase.js             # Supabase client + transaction/recurring/auth services
@@ -188,17 +209,18 @@ src/
 ## Tech Stack
 
 - **React 18** with Vite — code-split pages, lazy-loaded heavy components
-- **Tailwind CSS** — dark theme, responsive layout
+- **Tailwind CSS** — dark theme, mobile-first responsive layout
 - **Supabase** — PostgreSQL + Auth + Row Level Security
+- **Workbox (vite-plugin-pwa)** — service worker, precaching, runtime cache strategies
 - **Recharts** — interactive area and pie charts
 - **Lucide** — consistent icon set
 - **React Router 6** — protected + public routes
 
 ## Roadmap
 
+- [x] PWA with service worker for full offline support
 - [ ] CSV/PDF bank statement import
 - [ ] Budget goals with threshold alerts
-- [ ] PWA with service worker for full offline support
 - [ ] Browser notifications for upcoming bills
 - [ ] Light/dark theme toggle
 
