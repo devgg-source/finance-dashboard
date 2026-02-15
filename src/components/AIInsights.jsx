@@ -116,7 +116,7 @@ const InsightCard = ({ insight, t }) => {
             <h4 className={`font-semibold text-sm ${styles.title}`}>
               {title}
             </h4>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-medium uppercase ${styles.badge}`}>
+            <span className={`text-[11px] px-2 py-0.5 rounded-full font-medium uppercase ${styles.badge}`}>
               {priorityLabel}
             </span>
           </div>

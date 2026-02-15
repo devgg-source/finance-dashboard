@@ -271,8 +271,8 @@ const TransactionsPage = () => {
 
       {/* Transactions List */}
       <div className="bg-[#12121a] rounded-2xl border border-white/[0.06] overflow-hidden">
-        {/* Table Header */}
-        <div className="grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.06] text-xs font-medium text-slate-500 uppercase tracking-wider">
+        {/* Table Header - hidden below lg */}
+        <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-4 border-b border-white/[0.06] text-xs font-medium text-slate-500 uppercase tracking-wider">
           <div className="col-span-5">{t('transactions.description')}</div>
           <div className="col-span-2">{t('transactions.category')}</div>
           <div className="col-span-2">{t('transactions.date')}</div>
@@ -289,62 +289,113 @@ const TransactionsPage = () => {
             return (
               <div
                 key={transaction.id}
-                className="group grid grid-cols-12 gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors"
+                className="group"
               >
-                {/* Description with icon */}
-                <div className="col-span-5 flex items-center gap-3">
-                  <div className="relative flex-shrink-0">
-                    <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-lg">
-                      {category?.icon || '💵'}
+                {/* Desktop row */}
+                <div className="hidden lg:grid grid-cols-12 gap-4 px-6 py-4 hover:bg-white/[0.02] transition-colors">
+                  {/* Description with icon */}
+                  <div className="col-span-5 flex items-center gap-3">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-lg">
+                        {category?.icon || '💵'}
+                      </div>
+                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${typeConfig.bg} flex items-center justify-center`}>
+                        <typeConfig.icon className={`w-2.5 h-2.5 ${typeConfig.color}`} />
+                      </div>
                     </div>
-                    <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${typeConfig.bg} flex items-center justify-center`}>
-                      <typeConfig.icon className={`w-2.5 h-2.5 ${typeConfig.color}`} />
+                    <div className="min-w-0">
+                      <p className="font-medium text-white text-sm truncate">{transaction.description}</p>
+                      <p className={`text-xs ${typeConfig.color}`}>{t(`common.${transaction.type}`)}</p>
                     </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-medium text-white text-sm truncate">{transaction.description}</p>
-                    <p className={`text-xs ${typeConfig.color}`}>{t(`common.${transaction.type}`)}</p>
+
+                  {/* Category */}
+                  <div className="col-span-2 flex items-center">
+                    <span className="text-sm text-slate-400">{getCategoryName(transaction.category)}</span>
+                  </div>
+
+                  {/* Date */}
+                  <div className="col-span-2 flex items-center">
+                    <span className="text-sm text-slate-400">{formatDate(transaction.date)}</span>
+                  </div>
+
+                  {/* Amount */}
+                  <div className="col-span-2 flex items-center justify-end">
+                    <span className={`font-semibold text-sm ${typeConfig.color}`}>
+                      {typeConfig.sign}{formatAmount(transaction.amount)}
+                    </span>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="col-span-1 flex items-center justify-end gap-1">
+                    <button
+                      onClick={() => handleEdit(transaction)}
+                      className="p-2 rounded-lg text-slate-600 hover:text-indigo-400 hover:bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-all"
+                      title="Edit transaction"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDelete(transaction.id)}
+                      disabled={deletingId === transaction.id}
+                      className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
+                      title="Delete transaction"
+                    >
+                      {deletingId === transaction.id ? (
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <Trash2 className="w-4 h-4" />
+                      )}
+                    </button>
                   </div>
                 </div>
 
-                {/* Category */}
-                <div className="col-span-2 flex items-center">
-                  <span className="text-sm text-slate-400">{getCategoryName(transaction.category)}</span>
-                </div>
-
-                {/* Date */}
-                <div className="col-span-2 flex items-center">
-                  <span className="text-sm text-slate-400">{formatDate(transaction.date)}</span>
-                </div>
-
-                {/* Amount */}
-                <div className="col-span-2 flex items-center justify-end">
-                  <span className={`font-semibold text-sm ${typeConfig.color}`}>
-                    {typeConfig.sign}{formatAmount(transaction.amount)}
-                  </span>
-                </div>
-
-                {/* Actions */}
-                <div className="col-span-1 flex items-center justify-end gap-1">
-                  <button
-                    onClick={() => handleEdit(transaction)}
-                    className="p-2 rounded-lg text-slate-600 hover:text-indigo-400 hover:bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-all"
-                    title="Edit transaction"
-                  >
-                    <Pencil className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDelete(transaction.id)}
-                    disabled={deletingId === transaction.id}
-                    className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all disabled:opacity-50"
-                    title="Delete transaction"
-                  >
-                    {deletingId === transaction.id ? (
-                      <Loader2 className="w-4 h-4 animate-spin" />
-                    ) : (
-                      <Trash2 className="w-4 h-4" />
-                    )}
-                  </button>
+                {/* Mobile card */}
+                <div className="lg:hidden px-4 py-3 hover:bg-white/[0.02] transition-colors">
+                  <div className="flex items-center gap-3">
+                    <div className="relative flex-shrink-0">
+                      <div className="w-10 h-10 rounded-xl bg-white/[0.04] flex items-center justify-center text-lg">
+                        {category?.icon || '💵'}
+                      </div>
+                      <div className={`absolute -bottom-1 -right-1 w-4 h-4 rounded-full ${typeConfig.bg} flex items-center justify-center`}>
+                        <typeConfig.icon className={`w-2.5 h-2.5 ${typeConfig.color}`} />
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between gap-2">
+                        <p className="font-medium text-white text-sm truncate">{transaction.description}</p>
+                        <span className={`font-semibold text-sm flex-shrink-0 ${typeConfig.color}`}>
+                          {typeConfig.sign}{formatAmount(transaction.amount)}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between mt-1">
+                        <div className="flex items-center gap-2 text-xs text-slate-500">
+                          <span>{getCategoryName(transaction.category)}</span>
+                          <span>•</span>
+                          <span>{formatDate(transaction.date)}</span>
+                        </div>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => handleEdit(transaction)}
+                            className="p-1.5 rounded-lg text-slate-500 active:text-indigo-400 active:bg-indigo-500/10 transition-all"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => handleDelete(transaction.id)}
+                            disabled={deletingId === transaction.id}
+                            className="p-1.5 rounded-lg text-slate-500 active:text-rose-400 active:bg-rose-500/10 transition-all disabled:opacity-50"
+                          >
+                            {deletingId === transaction.id ? (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             );

@@ -140,9 +140,9 @@ export const ExpenseBreakdownChart = () => {
           <p className="text-slate-500 text-sm">{t('analytics.noDataYet')}</p>
         </div>
       ) : (
-        <div className="flex items-center gap-6">
+        <div className="flex flex-col sm:flex-row items-center gap-6">
           {/* Pie Chart */}
-          <div className="h-56 flex-1">
+          <div className="h-56 w-full sm:flex-1">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
                 <Pie
@@ -174,7 +174,7 @@ export const ExpenseBreakdownChart = () => {
           </div>
           
           {/* Legend */}
-          <div className="space-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-1 gap-3 w-full sm:w-auto">
             {expensesByCategory.map((category, index) => (
               <div key={index} className="flex items-center gap-3">
                 <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: category.color }} />
