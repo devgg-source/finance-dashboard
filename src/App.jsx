@@ -11,8 +11,10 @@ import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
 import { useFinance } from './context/FinanceContext';
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2 } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2, Menu } from 'lucide-react';
 import Loader from './components/ui/Loader';
+import PWAInstallPrompt from './components/PWAInstallPrompt';
+import PWAUpdatePrompt from './components/PWAUpdatePrompt';
 import './index.css';
 
 // Lazy load pages and heavy components
@@ -155,17 +157,40 @@ const Dashboard = () => {
 
 // Layout Component with dynamic sidebar width
 const AppLayout = () => {
-  const { isCollapsed } = useSidebar();
+  const { isCollapsed, isMobile, setIsMobileOpen } = useSidebar();
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
       <Sidebar />
+
+      {/* Mobile Top Header */}
+      {isMobile && (
+        <header className="fixed top-0 left-0 right-0 h-14 bg-[#0d0d12] border-b border-white/[0.06] flex items-center justify-between px-4 z-30">
+          <div className="flex items-center gap-3">
+            <button
+              onClick={() => setIsMobileOpen(true)}
+              className="p-2 -ml-2 text-slate-400 hover:text-white rounded-lg hover:bg-white/[0.05] transition-colors"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg flex items-center justify-center">
+                <Wallet className="w-3.5 h-3.5 text-white" />
+              </div>
+              <span className="text-sm font-semibold text-white tracking-tight">Xpensio</span>
+            </div>
+          </div>
+        </header>
+      )}
+
       <div 
         className={`transition-all duration-300 ease-in-out ${
-          isCollapsed ? 'pl-20' : 'pl-64'
+          isMobile 
+            ? 'pl-0 pt-14'
+            : isCollapsed ? 'pl-20' : 'pl-64'
         }`}
       >
-        <main className="min-h-screen p-6 lg:p-8">
+        <main className="min-h-screen p-4 md:p-6 lg:p-8">
           <Suspense fallback={<Loader size="lg" />}>
             <Routes>
               <Route path="/" element={<Dashboard />} />
@@ -188,6 +213,8 @@ function App() {
       <SettingsProvider>
         <ToastProvider>
           <AuthProvider>
+            <PWAUpdatePrompt />
+            <PWAInstallPrompt />
             <Router>
               <Suspense fallback={<Loader fullscreen />}>
                 <Routes>

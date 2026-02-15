@@ -319,5 +319,15 @@
     "markedPaid": "Marqué comme payé — transaction créée",
     "markPaidFailed": "Échec du marquage comme payé",
     "patternAccepted": "Le modèle est maintenant suivi"
+  },
+  "pwa": {
+    "installTitle": "Installer Xpensio",
+    "installDescription": "Ajoutez à votre écran d'accueil pour un accès rapide, un support hors ligne et une expérience native.",
+    "install": "Installer",
+    "notNow": "Pas maintenant",
+    "updateTitle": "Mise à jour disponible",
+    "updateDescription": "Une nouvelle version de Xpensio est disponible. Rafraîchissez pour mettre à jour.",
+    "refresh": "Rafraîchir",
+    "later": "Plus tard"
   }
 }

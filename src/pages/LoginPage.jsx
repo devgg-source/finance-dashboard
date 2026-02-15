@@ -89,7 +89,7 @@ const LoginPage = () => {
         </div>
 
         {/* Form */}
-        <div className="bg-[#12121a] rounded-2xl p-8 border border-white/[0.06]">
+        <div className="bg-[#12121a] rounded-2xl p-5 sm:p-8 border border-white/[0.06]">
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Email */}
             <div>

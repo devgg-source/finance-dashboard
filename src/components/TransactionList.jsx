@@ -91,29 +91,29 @@ const TransactionList = ({ limit, onEdit }) => {
             </div>
             
             {/* Amount */}
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2">
               <div className="text-right">
                 <p className={`font-semibold text-sm ${typeConfig.color}`}>
                   {typeConfig.sign}{formatCurrency(transaction.amount)}
                 </p>
               </div>
               
-              {/* Edit button */}
+              {/* Edit button - always visible on mobile, hover on desktop */}
               {onEdit && (
                 <button
                   onClick={() => onEdit(transaction)}
-                  className="p-2 rounded-lg text-slate-600 hover:text-indigo-400 hover:bg-indigo-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200"
+                  className="p-2 rounded-lg text-slate-600 hover:text-indigo-400 hover:bg-indigo-500/10 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200"
                   title="Edit transaction"
                 >
                   <Pencil className="w-4 h-4" />
                 </button>
               )}
               
-              {/* Delete button */}
+              {/* Delete button - always visible on mobile, hover on desktop */}
               <button
                 onClick={() => handleDelete(transaction.id, transaction.description)}
                 disabled={deletingId === transaction.id}
-                className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200 disabled:opacity-50"
+                className="p-2 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-500/10 sm:opacity-0 sm:group-hover:opacity-100 transition-all duration-200 disabled:opacity-50"
                 title="Delete transaction"
               >
                 {deletingId === transaction.id ? (

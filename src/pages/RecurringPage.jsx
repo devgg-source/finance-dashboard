@@ -407,7 +407,7 @@ const RecurringPage = () => {
           ))}
         </div>
 
-        <div className="relative flex-1 max-w-xs">
+        <div className="relative flex-1 sm:max-w-xs">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
           <input
             type="text"
@@ -449,7 +449,7 @@ const RecurringPage = () => {
                     : 'border-white/[0.06]'
                 }`}
               >
-                <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+                <div className="flex flex-col md:flex-row md:items-center gap-4">
                   {/* Icon + Info */}
                   <div className="flex items-center gap-4 flex-1 min-w-0">
                     <div className={`w-11 h-11 rounded-xl ${typeConfig.bg} flex items-center justify-center flex-shrink-0`}>
@@ -457,8 +457,8 @@ const RecurringPage = () => {
                     </div>
 
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-medium text-white truncate">{recurring.description}</p>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <p className="text-sm font-medium text-white truncate max-w-[200px] sm:max-w-none">{recurring.description}</p>
                         <span className={`shrink-0 text-[10px] px-2 py-0.5 rounded-full border ${status.color}`}>
                           {status.label}
                         </span>
@@ -468,11 +468,11 @@ const RecurringPage = () => {
                           </span>
                         )}
                       </div>
-                      <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-slate-500">
                         <span>{category?.icon} {getCategoryName(recurring.category)}</span>
-                        <span>•</span>
+                        <span className="hidden xs:inline">•</span>
                         <span>{getFrequencyLabel(recurring.frequency)}</span>
-                        <span>•</span>
+                        <span className="hidden xs:inline">•</span>
                         <span className="inline-flex items-center gap-1">
                           <Calendar className="w-3 h-3" />
                           {t('recurring.nextDue')}: {formatDate(recurring.nextDueDate)}
@@ -482,12 +482,12 @@ const RecurringPage = () => {
                   </div>
 
                   {/* Amount + Actions */}
-                  <div className="flex items-center gap-4 flex-shrink-0">
+                  <div className="flex items-center justify-between md:justify-end gap-4 flex-shrink-0">
                     <p className={`text-base font-semibold ${typeConfig.color}`}>
                       {typeConfig.sign}{formatAmount(recurring.amount)}
                     </p>
 
-                    <div className="flex items-center gap-1.5">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {recurring.isActive && (
                         <button
                           onClick={() => handleMarkPaid(recurring.id)}

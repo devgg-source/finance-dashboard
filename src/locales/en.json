@@ -325,5 +325,15 @@
     "markedPaid": "Marked as paid — transaction created",
     "markPaidFailed": "Failed to mark as paid",
     "patternAccepted": "Pattern is now being tracked"
+  },
+  "pwa": {
+    "installTitle": "Install Xpensio",
+    "installDescription": "Add to your home screen for quick access, offline support, and a native app experience.",
+    "install": "Install",
+    "notNow": "Not now",
+    "updateTitle": "Update Available",
+    "updateDescription": "A new version of Xpensio is available. Refresh to update.",
+    "refresh": "Refresh",
+    "later": "Later"
   }
 }
