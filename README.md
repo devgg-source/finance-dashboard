@@ -1,10 +1,10 @@
-# Xpensio — Personal Finance Tracker with Recurring Transaction Detection
+# Xpensio — AI-Powered Personal Finance Tracker with Recurring Transaction Detection
 
 I built Xpensio because every free finance app I tried had the same problem: they tracked what I'd already spent, but never warned me about what was coming. Subscriptions I forgot about, bills due tomorrow, rent I hadn't budgeted for — the important stuff always slipped through.
 
-So I built a tool that actually solves this. Xpensio scans your transaction history, detects recurring patterns (subscriptions, EMIs, rent, salary), and tells you what's due, what's overdue, and how much your recurring commitments actually cost per month/year. No more surprise charges.
+So I built a tool that actually solves this. Xpensio scans your transaction history, detects recurring patterns (subscriptions, EMIs, rent, salary), and tells you what's due, what's overdue, and how much your recurring commitments actually cost per month/year. Now with an AI assistant powered by CopilotKit (AG-UI) that lets you manage finances through natural conversation. No more surprise charges.
 
-![Xpensio](https://img.shields.io/badge/version-3.0-blue.svg)
+![Xpensio](https://img.shields.io/badge/version-3.1-blue.svg)
 
 ## The Problem
 
@@ -44,6 +44,36 @@ A rule-based insights engine ([`src/utils/insightsEngine.js`](src/utils/insights
 
 No external API calls. No data leaves your browser. All analysis runs client-side.
 
+### AI Financial Assistant (CopilotKit / AG-UI)
+
+Xpensio v3.1 integrates [CopilotKit](https://copilotkit.ai) to provide a conversational AI assistant that understands your financial data in real-time:
+
+- **Natural language interaction** — Ask "How much did I spend on food this month?" or "Add ₹500 expense for groceries" and the assistant responds with context-aware answers
+- **Full data visibility** — The assistant has read access to your financial summary, monthly trends, expense breakdown, categories, and recent transactions via `useCopilotReadable` hooks
+- **Action execution** — Add transactions, delete transactions, search by keyword, get spending by category, and analyze monthly trends — all through conversation via `useCopilotAction` hooks
+- **SaaS-style panel** — Modern right-side slide-in panel (not a floating bubble), pushes content on desktop, overlays on mobile/tablet
+- **Responsive design** — Full-width on mobile, 380px overlay on tablet, 400px push-content on desktop
+- **Keyboard shortcuts** — `⌘/` to toggle, `Escape` to close
+- **Dark theme** — Fully styled to match Xpensio's dark UI with indigo accent gradients
+
+The assistant is powered by CopilotKit's AG-UI protocol. Financial context is shared via [`src/components/CopilotProvider.jsx`](src/components/CopilotProvider.jsx), and the chat panel lives in [`src/components/AIChatPanel.jsx`](src/components/AIChatPanel.jsx).
+
+### Smart Amount Input with Math Expressions
+
+The transaction amount field supports inline math expressions — no need for a calculator:
+
+| You type | Result |
+|----------|--------|
+| `500+200` | ₹700 |
+| `1500*3` | ₹4,500 |
+| `10000/4` | ₹2,500 |
+| `(1200+800)*0.18` | ₹360 |
+| `5000-1500+200` | ₹3,700 |
+
+- Live preview shows the computed result while typing (with calculator icon)
+- Expression auto-evaluates on blur
+- Uses a safe recursive-descent parser ([`src/utils/mathEvaluator.js`](src/utils/mathEvaluator.js)) — no `eval()`, supports `+`, `-`, `*`, `/`, parentheses, decimals
+
 ### Other Features
 
 - **Full transaction management** — Add, edit, delete, filter, search
@@ -51,6 +81,7 @@ No external API calls. No data leaves your browser. All analysis runs client-sid
 - **Auth & cloud sync** — Supabase authentication with row-level security
 - **Offline-capable** — IndexedDB for local storage, localStorage fallback for recurring data
 - **5 languages** — English, Hindi, Tamil, Spanish, French (complete i18n, not just UI labels — insights, categories, and chart labels are all translated)
+- **Smart amount input** — Type math expressions like `500+200` or `(1200+800)*0.18` directly in the amount field with live preview
 - **Data export** — Download your transactions as JSON
 
 ### Progressive Web App (PWA)
@@ -114,7 +145,10 @@ Create a `.env` file:
 ```
 VITE_SUPABASE_URL=your_supabase_project_url
 VITE_SUPABASE_PUBLISHABLE_DEFAULT_KEY=your_supabase_anon_key
+VITE_COPILOTKIT_PUBLIC_API_KEY=your_copilotkit_public_api_key
 ```
+
+> Get a free CopilotKit API key at [cloud.copilotkit.ai](https://cloud.copilotkit.ai). The app works without it — the AI assistant panel simply won't connect.
 
 Set up the database:
 ```sql
@@ -178,24 +212,27 @@ npm run dev
 src/
 ├── utils/
 │   ├── recurringDetector.js   # Pattern detection algorithm
-│   └── insightsEngine.js      # Rule-based financial insights
+│   ├── insightsEngine.js      # Rule-based financial insights
+│   └── mathEvaluator.js       # Safe recursive-descent math expression parser
 ├── context/
 │   ├── RecurringContext.jsx    # Recurring transaction state + Supabase/localStorage sync
 │   ├── FinanceContext.jsx      # Transaction state + computed metrics
 │   ├── AuthContext.jsx         # Supabase auth
 │   ├── LanguageContext.jsx     # i18n with 5 languages
 │   ├── SettingsContext.jsx     # User preferences
-│   ├── SidebarContext.jsx      # UI state
+│   ├── SidebarContext.jsx      # UI state + AI panel state
 │   └── ToastContext.jsx        # Notification queue system
 ├── pages/
 │   ├── RecurringPage.jsx       # Recurring transaction management
-│   ├── TransactionsPage.jsx    # Transaction CRUD + filters
+│   ├── TransactionsPage.jsx    # Transaction CRUD + filters + math expressions
 │   ├── AnalyticsPage.jsx       # Charts and financial metrics
 │   └── SettingsPage.jsx        # Profile, security, preferences
 ├── components/
+│   ├── AIChatPanel.jsx         # CopilotKit right-side AI chat panel
+│   ├── CopilotProvider.jsx     # Readable state + action hooks for CopilotKit
 │   ├── AIInsights.jsx          # Dashboard insight cards
 │   ├── Charts.jsx              # Recharts area + pie charts
-│   ├── Sidebar.jsx             # Collapsible nav + mobile drawer
+│   ├── Sidebar.jsx             # Collapsible nav + mobile drawer + AI toggle
 │   ├── PWAInstallPrompt.jsx    # Smart install-to-home-screen prompt
 │   ├── PWAUpdatePrompt.jsx     # Service worker update notification
 │   └── ui/                     # Button, Loader, ConfirmDialog
@@ -203,12 +240,13 @@ src/
 │   ├── supabase.js             # Supabase client + transaction/recurring/auth services
 │   └── indexedDB.js            # IndexedDB wrapper for offline support
 ├── locales/                    # en.json, hi.json, ta.json, es.json, fr.json
-└── App.jsx                     # Routing, providers, lazy loading
+└── App.jsx                     # Routing, providers, CopilotKit wrapper
 ```
 
 ## Tech Stack
 
 - **React 18** with Vite — code-split pages, lazy-loaded heavy components
+- **CopilotKit (AG-UI)** — AI assistant with shared financial state and action execution
 - **Tailwind CSS** — dark theme, mobile-first responsive layout
 - **Supabase** — PostgreSQL + Auth + Row Level Security
 - **Workbox (vite-plugin-pwa)** — service worker, precaching, runtime cache strategies
@@ -219,6 +257,9 @@ src/
 ## Roadmap
 
 - [x] PWA with service worker for full offline support
+- [x] AI financial assistant via CopilotKit (AG-UI)
+- [x] Math expression support in amount input
+- [ ] LangGraph agent backend for deeper AI reasoning
 - [ ] CSV/PDF bank statement import
 - [ ] Budget goals with threshold alerts
 - [ ] Browser notifications for upcoming bills

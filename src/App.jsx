@@ -1,5 +1,7 @@
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useState, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route, Link, Navigate } from 'react-router-dom';
+import { CopilotKit } from '@copilotkit/react-core';
+import '@copilotkit/react-ui/styles.css';
 import { FinanceProvider } from './context/FinanceContext';
 import { RecurringProvider } from './context/RecurringContext';
 import { SidebarProvider, useSidebar } from './context/SidebarContext';
@@ -10,8 +12,10 @@ import { LanguageProvider, useTranslation } from './context/LanguageContext';
 import Sidebar from './components/Sidebar';
 import StatCard from './components/StatCard';
 import TransactionList from './components/TransactionList';
+import CopilotProvider from './components/CopilotProvider';
+import AIChatPanel from './components/AIChatPanel';
 import { useFinance } from './context/FinanceContext';
-import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2, Menu } from 'lucide-react';
+import { Wallet, TrendingUp, TrendingDown, PiggyBank, Loader2, Menu, Sparkles } from 'lucide-react';
 import Loader from './components/ui/Loader';
 import PWAInstallPrompt from './components/PWAInstallPrompt';
 import PWAUpdatePrompt from './components/PWAUpdatePrompt';
@@ -157,7 +161,14 @@ const Dashboard = () => {
 
 // Layout Component with dynamic sidebar width
 const AppLayout = () => {
-  const { isCollapsed, isMobile, setIsMobileOpen } = useSidebar();
+  const { isCollapsed, isMobile, setIsMobileOpen, isAiPanelOpen, toggleAiPanel } = useSidebar();
+  const [isLargeDesktop, setIsLargeDesktop] = useState(() => window.innerWidth >= 1024);
+
+  useEffect(() => {
+    const handleResize = () => setIsLargeDesktop(window.innerWidth >= 1024);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   return (
     <div className="min-h-screen bg-[#0a0a0f]">
@@ -180,6 +191,16 @@ const AppLayout = () => {
               <span className="text-sm font-semibold text-white tracking-tight">Xpensio</span>
             </div>
           </div>
+          <button
+            onClick={toggleAiPanel}
+            className={`p-2 rounded-lg transition-colors ${
+              isAiPanelOpen
+                ? 'text-indigo-400 bg-indigo-500/10'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
+            }`}
+          >
+            <Sparkles className="w-5 h-5" />
+          </button>
         </header>
       )}
 
@@ -189,6 +210,9 @@ const AppLayout = () => {
             ? 'pl-0 pt-14'
             : isCollapsed ? 'pl-20' : 'pl-64'
         }`}
+        style={{
+          paddingRight: isLargeDesktop && isAiPanelOpen ? '400px' : '0',
+        }}
       >
         <main className="min-h-screen p-4 md:p-6 lg:p-8">
           <Suspense fallback={<Loader size="lg" />}>
@@ -238,13 +262,18 @@ function App() {
                   {/* Protected Routes */}
                   <Route path="/*" element={
                     <ProtectedRoute>
-                      <FinanceProvider>
-                        <RecurringProvider>
-                          <SidebarProvider>
-                            <AppLayout />
-                          </SidebarProvider>
-                        </RecurringProvider>
-                      </FinanceProvider>
+                      <CopilotKit publicApiKey={import.meta.env.VITE_COPILOTKIT_PUBLIC_API_KEY} showDevConsole={false}>
+                        <FinanceProvider>
+                          <RecurringProvider>
+                            <CopilotProvider>
+                              <SidebarProvider>
+                                <AppLayout />
+                                <AIChatPanel />
+                              </SidebarProvider>
+                            </CopilotProvider>
+                          </RecurringProvider>
+                        </FinanceProvider>
+                      </CopilotKit>
                     </ProtectedRoute>
                   } />
                 </Routes>

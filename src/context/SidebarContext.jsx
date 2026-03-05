@@ -16,6 +16,7 @@ export const SidebarProvider = ({ children }) => {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(() => window.innerWidth < MOBILE_BREAKPOINT);
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isAiPanelOpen, setIsAiPanelOpen] = useState(false);
 
   // Listen for screen resize
   useEffect(() => {
@@ -41,6 +42,15 @@ export const SidebarProvider = ({ children }) => {
     setIsMobileOpen(false);
   }, []);
 
+  const toggleAiPanel = useCallback(() => {
+    setIsAiPanelOpen(prev => {
+      const next = !prev;
+      // Auto-collapse sidebar on desktop when AI panel opens
+      if (next && !isMobile) setIsCollapsed(true);
+      return next;
+    });
+  }, [isMobile]);
+
   return (
     <SidebarContext.Provider value={{ 
       isCollapsed, 
@@ -48,7 +58,10 @@ export const SidebarProvider = ({ children }) => {
       isMobile, 
       isMobileOpen, 
       setIsMobileOpen, 
-      closeMobileSidebar 
+      closeMobileSidebar,
+      isAiPanelOpen,
+      toggleAiPanel,
+      setIsAiPanelOpen,
     }}>
       {children}
     </SidebarContext.Provider>

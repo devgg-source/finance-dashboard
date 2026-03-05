@@ -1,9 +1,20 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
+import path from 'path'
+
+// Resolve vfile subpath imports that Vite 3 doesn't handle natively
+const vfilePath = path.resolve(__dirname, 'node_modules/@copilotkit/react-ui/node_modules/vfile/lib')
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  resolve: {
+    alias: {
+      '#minpath': path.join(vfilePath, 'minpath.browser.js'),
+      '#minproc': path.join(vfilePath, 'minproc.browser.js'),
+      '#minurl': path.join(vfilePath, 'minurl.browser.js'),
+    },
+  },
   plugins: [
     react(),
     VitePWA({
@@ -65,6 +76,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        maximumFileSizeToCacheInBytes: 5 * 1024 * 1024, // 5 MiB
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,

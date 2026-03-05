@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
-import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight, Settings, RefreshCw, X } from 'lucide-react';
+import { LayoutDashboard, Receipt, PieChart, Wallet, LogOut, ChevronLeft, ChevronRight, Settings, RefreshCw, X, Sparkles } from 'lucide-react';
 import { useSidebar } from '../context/SidebarContext';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
@@ -8,7 +8,7 @@ import { useTranslation } from '../context/LanguageContext';
 import ConfirmDialog from './ui/ConfirmDialog';
 
 const Sidebar = () => {
-  const { isCollapsed, toggleSidebar, isMobile, isMobileOpen, closeMobileSidebar } = useSidebar();
+  const { isCollapsed, toggleSidebar, isMobile, isMobileOpen, closeMobileSidebar, isAiPanelOpen, toggleAiPanel } = useSidebar();
   const { user, signOut } = useAuth();
   const { addToast } = useToast();
   const { t } = useTranslation();
@@ -155,6 +155,47 @@ const Sidebar = () => {
             ))}
           </ul>
         </nav>
+
+        {/* AI Assistant Button */}
+        <div className="px-1 pb-3">
+          <button
+            onClick={() => {
+              toggleAiPanel();
+              if (isMobile) closeMobileSidebar();
+            }}
+            className={`group relative flex items-center gap-3 w-full rounded-xl transition-all duration-200 ${
+              !sidebarExpanded 
+                ? 'h-11 justify-center' 
+                : 'h-11 px-4'
+            } ${
+              isAiPanelOpen
+                ? 'bg-gradient-to-r from-indigo-500/20 to-purple-500/20 text-white border border-indigo-500/20'
+                : 'text-slate-400 hover:text-white hover:bg-white/[0.05]'
+            }`}
+          >
+            <Sparkles className={`w-5 h-5 flex-shrink-0 ${
+              isAiPanelOpen ? 'text-indigo-400' : 'text-slate-400 group-hover:text-indigo-400'
+            }`} />
+            {sidebarExpanded && (
+              <>
+                <span className="text-sm font-medium">AI Assistant</span>
+                <div className={`ml-auto text-[10px] font-medium px-1.5 py-0.5 rounded-md ${
+                  isAiPanelOpen 
+                    ? 'bg-indigo-500/30 text-indigo-300' 
+                    : 'bg-indigo-500/10 text-indigo-400'
+                }`}>
+                  ⌘/
+                </div>
+              </>
+            )}
+            {/* Tooltip for collapsed state */}
+            {!isMobile && isCollapsed && (
+              <div className="absolute left-full ml-2 px-2.5 py-1.5 bg-[#1e1e28] text-white text-xs font-medium rounded-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-150 whitespace-nowrap shadow-xl z-50">
+                AI Assistant
+              </div>
+            )}
+          </button>
+        </div>
 
         {/* User Profile Section */}
         <div className="py-4 border-t border-white/[0.04]">

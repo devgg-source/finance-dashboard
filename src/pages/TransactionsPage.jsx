@@ -1,11 +1,12 @@
 import { useState, useMemo, useEffect } from 'react';
-import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2, Pencil } from 'lucide-react';
+import { Plus, Search, Filter, X, Calendar, ArrowUpRight, ArrowDownRight, Wallet, Trash2, Loader2, Pencil, Calculator } from 'lucide-react';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import '../styles/datepicker.css';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
 import { useTranslation } from '../context/LanguageContext';
+import { evaluateExpression, isMathExpression } from '../utils/mathEvaluator';
 import { v4 as uuidv4 } from 'uuid';
 
 const TransactionsPage = () => {
@@ -89,6 +90,13 @@ const TransactionsPage = () => {
     e.preventDefault();
     if (!newTransaction.description || !newTransaction.amount || isSubmitting) return;
 
+    // Evaluate math expression in amount
+    const computedAmount = evaluateExpression(newTransaction.amount);
+    if (isNaN(computedAmount) || computedAmount <= 0) {
+      toast.error(t('toast.invalidAmount') || 'Invalid amount', t('toast.tryAgain') || 'Please enter a valid number or expression');
+      return;
+    }
+
     setIsSubmitting(true);
     try {
       if (editingTransaction) {
@@ -96,7 +104,7 @@ const TransactionsPage = () => {
         await updateTransaction({
           ...editingTransaction,
           ...newTransaction,
-          amount: parseFloat(newTransaction.amount)
+          amount: computedAmount
         });
         toast.success(t('toast.transactionUpdated'), t('toast.transactionUpdatedDesc'));
       } else {
@@ -104,7 +112,7 @@ const TransactionsPage = () => {
         await addTransaction({
           id: uuidv4(),
           ...newTransaction,
-          amount: parseFloat(newTransaction.amount)
+          amount: computedAmount
         });
         toast.success(t('toast.transactionAdded'), t('toast.transactionAddedDesc'));
       }
@@ -503,16 +511,42 @@ const TransactionsPage = () => {
               {/* Amount */}
               <div>
                 <label className="block text-sm font-medium text-slate-400 mb-2">{t('transactions.amount')}</label>
-                <input
-                  type="number"
-                  value={newTransaction.amount}
-                  onChange={(e) => setNewTransaction(prev => ({ ...prev, amount: e.target.value }))}
-                  placeholder="0"
-                  min="0"
-                  step="0.01"
-                  className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
-                  required
-                />
+                <div className="relative">
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={newTransaction.amount}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      // Allow digits, decimal, operators, parentheses, spaces
+                      if (/^[0-9+\-*/().\s]*$/.test(val)) {
+                        setNewTransaction(prev => ({ ...prev, amount: val }));
+                      }
+                    }}
+                    onBlur={() => {
+                      // Evaluate expression on blur and replace with result
+                      if (isMathExpression(newTransaction.amount)) {
+                        const result = evaluateExpression(newTransaction.amount);
+                        if (!isNaN(result) && result >= 0) {
+                          setNewTransaction(prev => ({ ...prev, amount: String(Math.round(result * 100) / 100) }));
+                        }
+                      }
+                    }}
+                    placeholder="e.g. 1500 or 500+200*3"
+                    className="w-full px-4 py-2.5 bg-white/[0.04] border border-white/[0.06] rounded-xl text-white placeholder-slate-500 text-sm focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
+                    required
+                  />
+                  {/* Expression preview */}
+                  {isMathExpression(newTransaction.amount) && (() => {
+                    const result = evaluateExpression(newTransaction.amount);
+                    return !isNaN(result) && result >= 0 ? (
+                      <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5 text-xs text-indigo-400">
+                        <Calculator className="w-3.5 h-3.5" />
+                        <span>= ₹{new Intl.NumberFormat('en-IN').format(Math.round(result * 100) / 100)}</span>
+                      </div>
+                    ) : null;
+                  })()}
+                </div>
               </div>
 
               {/* Date */}
