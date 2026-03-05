@@ -6,11 +6,14 @@ import {
   // CreditCard,
   Download,
   Trash2,
+  FileSpreadsheet,
+  ChevronDown,
   // ChevronRight,
   // Moon,
   // Sun,
   // Check
 } from 'lucide-react';
+import * as XLSX from 'xlsx';
 import { useAuth } from '../context/AuthContext';
 import { useFinance } from '../context/FinanceContext';
 import { useToast } from '../context/ToastContext';
@@ -31,6 +34,8 @@ const SettingsPage = () => {
   const [isDeletingData, setIsDeletingData] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [exportFormat, setExportFormat] = useState('csv');
+  const [showFormatDropdown, setShowFormatDropdown] = useState(false);
 
   // Get display name for export
   const displayName = user?.user_metadata?.full_name || user?.email?.split('@')[0] || 'User';
@@ -83,7 +88,7 @@ const SettingsPage = () => {
   };
   */
 
-  // Export transactions as JSON
+  // Export transactions as CSV or Excel
   const handleExportData = async () => {
     if (transactions.length === 0) {
       toast.warning(t('settings.noDataToExport'));
@@ -92,30 +97,57 @@ const SettingsPage = () => {
 
     setIsExporting(true);
     try {
-      const data = {
-        exportedAt: new Date().toISOString(),
-        user: {
-          email: user?.email,
-          name: displayName
-        },
-        transactions: transactions.map(t => ({
-          type: t.type,
-          category: t.category,
-          description: t.description,
-          amount: t.amount,
-          date: t.date
-        }))
-      };
+      const rows = transactions.map(t => ({
+        Date: t.date,
+        Type: t.type,
+        Category: t.category,
+        Description: t.description || '',
+        Amount: t.amount
+      }));
 
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `finance-data-${new Date().toISOString().split('T')[0]}.json`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
+      const dateStr = new Date().toISOString().split('T')[0];
+
+      if (exportFormat === 'csv') {
+        // CSV export
+        const headers = ['Date', 'Type', 'Category', 'Description', 'Amount'];
+        const csvRows = [
+          headers.join(','),
+          ...rows.map(row =>
+            headers.map(h => {
+              const val = String(row[h] ?? '');
+              // Escape values containing commas, quotes, or newlines
+              return val.includes(',') || val.includes('"') || val.includes('\n')
+                ? `"${val.replace(/"/g, '""')}"`
+                : val;
+            }).join(',')
+          )
+        ];
+        // BOM for proper UTF-8 in Excel
+        const bom = '\uFEFF';
+        const blob = new Blob([bom + csvRows.join('\n')], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `xpensio-transactions-${dateStr}.csv`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      } else {
+        // Excel export
+        const ws = XLSX.utils.json_to_sheet(rows);
+        // Set column widths
+        ws['!cols'] = [
+          { wch: 12 }, // Date
+          { wch: 10 }, // Type
+          { wch: 16 }, // Category
+          { wch: 30 }, // Description
+          { wch: 12 }, // Amount
+        ];
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, 'Transactions');
+        XLSX.writeFile(wb, `xpensio-transactions-${dateStr}.xlsx`);
+      }
 
       toast.success(t('settings.dataExported'));
     } catch (error) {
@@ -348,14 +380,48 @@ const SettingsPage = () => {
         <p className="text-slate-500 text-sm mb-6">{t('settings.exportOrDelete')}</p>
         
         <div className="flex flex-col sm:flex-row gap-3">
-          <Button 
-            onClick={handleExportData}
-            isLoading={isExporting}
-            variant="secondary"
-            icon={Download}
-          >
-            {t('settings.exportData')}
-          </Button>
+          {/* Export with format selector */}
+          <div className="flex items-stretch">
+            <Button 
+              onClick={handleExportData}
+              isLoading={isExporting}
+              variant="secondary"
+              icon={FileSpreadsheet}
+              className="!rounded-r-none border-r-0"
+            >
+              {t('settings.exportAs')} {exportFormat.toUpperCase()}
+            </Button>
+            <div className="relative">
+              <button
+                onClick={() => setShowFormatDropdown(!showFormatDropdown)}
+                className="h-full px-2.5 bg-white/[0.06] border border-white/[0.08] border-l-0 rounded-r-xl text-slate-400 hover:bg-white/[0.1] hover:text-white transition-colors flex items-center"
+              >
+                <ChevronDown size={16} className={`transition-transform ${showFormatDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              {showFormatDropdown && (
+                <>
+                  <div className="fixed inset-0 z-10" onClick={() => setShowFormatDropdown(false)} />
+                  <div className="absolute right-0 top-full mt-1 z-20 bg-[#1a1a2e] border border-white/[0.08] rounded-xl overflow-hidden shadow-xl shadow-black/40 min-w-[140px]">
+                    <button
+                      onClick={() => { setExportFormat('csv'); setShowFormatDropdown(false); }}
+                      className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors ${exportFormat === 'csv' ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-300 hover:bg-white/[0.06]'}`}
+                    >
+                      <Download size={14} />
+                      CSV
+                    </button>
+                    <button
+                      onClick={() => { setExportFormat('excel'); setShowFormatDropdown(false); }}
+                      className={`w-full px-4 py-2.5 text-left text-sm flex items-center gap-2.5 transition-colors ${exportFormat === 'excel' ? 'bg-indigo-500/20 text-indigo-400' : 'text-slate-300 hover:bg-white/[0.06]'}`}
+                    >
+                      <FileSpreadsheet size={14} />
+                      Excel (.xlsx)
+                    </button>
+                  </div>
+                </>
+              )}
+            </div>
+          </div>
+
           <Button 
             onClick={handleDeleteClick}
             variant="danger"
